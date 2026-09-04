@@ -379,6 +379,12 @@
     display:none; object-fit:cover; image-rendering:pixelated;
     border-radius:4px;
   }
+  #snowEventOverlay{
+    position:absolute; top:0; left:0; pointer-events:none; z-index:17;
+    display:none; object-fit:cover; image-rendering:pixelated;
+    border-radius:4px;
+    filter:drop-shadow(0 0 4px rgba(180,220,255,.9));
+  }
   .resident-avatar{ animation:residentBob 2.4s ease-in-out infinite; }
   .resident-row:nth-child(2n) .resident-avatar{ animation-delay:.4s; }
   .resident-row:nth-child(3n) .resident-avatar{ animation-delay:.8s; }
@@ -830,6 +836,10 @@
       <button id="ghCancel">Cancel</button>
       <button id="ghSave">Save</button>
     </div>
+    <div class="ghHint" style="margin-top:10px;">Danger zone: permanently wipes your local town and starts over.</div>
+    <div class="ghRow">
+      <button id="ghResetTown" style="background:linear-gradient(180deg,#ff9d9d,var(--bad)); color:#fff;">🗑️ Reset Town</button>
+    </div>
   </div>
 </div>
 
@@ -846,6 +856,7 @@
         <div id="floaters"></div>
         <div id="weather"></div>
         <img id="fallWindOverlay" alt="">
+        <img id="snowEventOverlay" alt="">
         <div id="levelFlash"></div>
       </div>
     </div>
@@ -1276,6 +1287,77 @@ function checkWinterStormExpiry(){
   }
 }
 
+// ---- Winter snow event: a road-blocking accident at a random road tile ----
+const SNOW_EVENT_IMG = TOWNVERSE_RES + 'img/winter-snow-event.png';
+const SNOW_EVENT_TICKS = 6; // ~18s at 3s/tick
+let snowEventActiveTile = null;
+
+function showSnowEventOverlay(index){
+  const el = document.getElementById('snowEventOverlay');
+  if(!el) return;
+  positionOverStage(el, index);
+  el.src = SNOW_EVENT_IMG;
+  el.style.display = 'block';
+}
+function hideSnowEventOverlay(){
+  const el = document.getElementById('snowEventOverlay');
+  if(el) el.style.display = 'none';
+}
+// A road tile currently blocked by the snow event; trucks route around it.
+function isSnowBlocked(tile){
+  return !!(tile && tile._snowBlockUntil && state.tick < tile._snowBlockUntil);
+}
+// Tally how many people (residents + workers) live/work in the 8 tiles around
+// a spot — used to scale the accident's penalty by how crowded the area is.
+function adjacentPeopleCount(idx){
+  const r = Math.floor(idx/COLS), c = idx % COLS;
+  const neighbors = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+  let count = 0;
+  for(const [dr,dc] of neighbors){
+    const nr = r+dr, nc = c+dc;
+    if(nr<0||nr>=ROWS||nc<0||nc>=COLS) continue;
+    const ni = nr*COLS+nc;
+    const t = state.tiles[ni];
+    if(!t) continue;
+    if(t.type === 'house' || t.type === 'apartment') count += houseResidents(ni).occupied;
+    else count += buildingEmployees(ni).filled;
+  }
+  return count;
+}
+function maybeTriggerSnowEvent(){
+  if(state.season !== WINTER_SEASON) return;
+  if(snowEventActiveTile != null) return; // one accident at a time
+  if(Math.random() > 0.10) return; // "at random", sometimes
+  const roadIdx = [];
+  state.tiles.forEach((t,i)=>{ if(isRoadLike(t)) roadIdx.push(i); });
+  if(roadIdx.length === 0) return;
+  const idx = roadIdx[Math.floor(Math.random()*roadIdx.length)];
+  const tile = state.tiles[idx];
+
+  const people = adjacentPeopleCount(idx);
+  const penalty = Math.min(15, 2 + people * 0.8); // busier neighborhoods take a bigger hit, capped
+
+  tile._snowBlockUntil = state.tick + SNOW_EVENT_TICKS;
+  snowEventActiveTile = idx;
+  showSnowEventOverlay(idx);
+  playSfx('event');
+
+  state.happiness = Math.max(0, state.happiness - penalty);
+  const msg = people > 0
+    ? `A snow drift blocked the road and caused an accident! ${people} nearby resident${people===1?'':'s'} were shaken.`
+    : `A snow drift blocked the road and caused an accident!`;
+  log(`❄️🚧 ${msg}`);
+  showFloater(idx, `-${Math.round(penalty)} 😟`, 'bad');
+  renderGrid(); renderStats();
+
+  setTimeout(()=>{
+    hideSnowEventOverlay();
+    if(state.tiles[idx]) delete state.tiles[idx]._snowBlockUntil;
+    snowEventActiveTile = null;
+    renderGrid(); renderStats();
+  }, SNOW_EVENT_TICKS * 3000);
+}
+
 // ---- Idle life: chimney smoke from factories ----
 function spawnSmoke(i){
   const layer = document.getElementById('floaters');
@@ -1321,6 +1403,7 @@ function bfsRoadPath(startIdx, endIdx){
     for(const n of neighbors){
       if(visited.has(n)) continue;
       if(!state.tiles[n] || !isRoadLike(state.tiles[n])) continue;
+      if(isSnowBlocked(state.tiles[n]) && n !== endIdx) continue; // route around the accident
       const newPath = [...path, n];
       if(n === endIdx) return newPath;
       visited.add(n);
@@ -1929,6 +2012,14 @@ function ghClosePanel(){ document.getElementById('ghOverlay').classList.remove('
 document.getElementById('ghSettingsBtn').addEventListener('click', ghOpenPanel);
 document.getElementById('ghCancel').addEventListener('click', ghClosePanel);
 document.getElementById('ghOverlay').addEventListener('click', (e)=>{ if(e.target.id==='ghOverlay') ghClosePanel(); });
+
+document.getElementById('ghResetTown').addEventListener('click', ()=>{
+  const sure = confirm('Reset your town? This permanently deletes your saved progress on this device and cannot be undone.');
+  if(!sure) return;
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  ghClosePanel();
+  location.reload();
+});
 
 document.getElementById('ghSave').addEventListener('click', ()=>{
   const cfg = {
@@ -3077,6 +3168,7 @@ function gameTick(){
   checkWinterStormExpiry();
   maybeTriggerFallWindEvent();
   maybeTriggerWinterStorm();
+  maybeTriggerSnowEvent();
 
   const jobs = jobsAvailable();
   const farms = countType('farm');
