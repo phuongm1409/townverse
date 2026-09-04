@@ -20,6 +20,11 @@
     --townhall:rgba(48,206,206,.92);
     --bridge:rgba(200,150,90,.92);
     --store:rgba(214,120,190,.92);
+    --apartment:rgba(150,132,214,.92); --apartment2:rgba(120,102,190,.92);
+    --eco-good:#2f9e58; --eco-bad:#d1495b;
+    --cinema:rgba(150,110,225,.92);
+    --restaurant:rgba(240,150,90,.92);
+    --concerthall:rgba(230,90,140,.92);
     --font-heading:'Silkscreen', monospace; --font-body:'Pixelify Sans', sans-serif;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
@@ -78,13 +83,26 @@
   .stat span.val{color:var(--accent2); font-weight:800;}
   .stat.bad span.val{color:var(--bad);}
   .stat.warn span.val{color:#c8860a;}
+  .stat.eco span.val{color:var(--eco-good);}
+  .stat.eco.bad span.val{color:var(--eco-bad);}
 
   #buildBar{
-    display:flex; gap:8px; align-items:stretch; overflow-x:auto; overflow-y:hidden;
-    padding:10px 18px; background:linear-gradient(180deg, #eaf4fd, #cfe6fb);
+    display:flex; flex-direction:column; gap:7px;
+    padding:8px 18px 10px; background:linear-gradient(180deg, #eaf4fd, #cfe6fb);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 -2px 5px rgba(0,0,0,.08);
     flex-shrink:0;
   }
+  .dock-tabs{ display:flex; gap:6px; flex-wrap:wrap; }
+  .dock-tab{
+    font-family:var(--font-heading); font-size:10px; font-weight:700; letter-spacing:.03em;
+    text-transform:uppercase; color:var(--accent2); cursor:pointer; white-space:nowrap;
+    background:#ffffff; padding:6px 12px; border-radius:9px; border:2px solid transparent;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(0,0,0,.06), 0 2px 3px rgba(0,0,0,.12);
+    transition: transform .08s, border-color .08s, background .08s;
+  }
+  .dock-tab:hover{ transform:translateY(-1px); }
+  .dock-tab.active{ border-color:var(--accent2); background:linear-gradient(180deg,#e2f0fd,#cfe6fb); }
+  .dock-panel{ display:flex; gap:6px; align-items:stretch; overflow-x:auto; overflow-y:hidden; height:86px; }
   .dock-group{ display:flex; flex-direction:column; gap:5px; flex-shrink:0; }
   .dock-groupLabel{
     font-family:var(--font-heading); font-size:9px; font-weight:700; color:var(--accent2);
@@ -93,7 +111,7 @@
   .dock-row{ display:flex; gap:6px; }
   .dock-btn{
     position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    width:68px; padding:6px 4px; gap:2px; cursor:pointer; flex-shrink:0;
+    width:68px; height:78px; padding:6px 4px; gap:2px; cursor:pointer; flex-shrink:0;
     background:linear-gradient(180deg, #ffffff, #eef4fa); border:2px solid transparent; border-radius:12px;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(0,0,0,.04), 0 2px 3px rgba(0,0,0,.12);
     transition:transform .08s, box-shadow .08s, border-color .08s;
@@ -104,7 +122,10 @@
   .dock-btn.locked{ opacity:.55; cursor:not-allowed; }
   .dock-btn.locked:hover{ transform:none; }
   .dock-btn .dock-icon{ font-size:20px; line-height:1; }
-  .dock-btn .dock-name{ font-size:10px; font-weight:700; line-height:1.15; }
+  .dock-btn .dock-name{
+    font-size:10px; font-weight:700; line-height:1.15; width:100%;
+    display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden;
+  }
   .dock-btn .dock-cost{ font-size:9px; color:var(--muted); font-weight:700; }
   .dock-btn .dock-lock{ position:absolute; top:2px; right:5px; font-size:10px; }
   .dock-btn.bulldoze.selected{ border-color:var(--bad); background:linear-gradient(180deg,#ffe3e3,#ffc9c9); }
@@ -401,6 +422,39 @@
     background:var(--store) !important;
     background-image: linear-gradient(135deg, rgba(255,255,255,.35) 0 20%, transparent 20% 100%);
   }
+  .tile.apartment{
+    background:linear-gradient(180deg, var(--apartment), var(--apartment2)) !important;
+    background-image: linear-gradient(135deg, rgba(255,255,255,.32) 0 20%, transparent 20% 100%),
+                       repeating-linear-gradient(0deg, rgba(255,255,255,.18) 0 3px, transparent 3px 9px);
+  }
+  .tile.cinema{
+    background:var(--cinema) !important;
+    background-image: linear-gradient(135deg, rgba(255,255,255,.3) 0 20%, transparent 20% 100%);
+  }
+  .tile.restaurant{
+    background:var(--restaurant) !important;
+    background-image: linear-gradient(135deg, rgba(255,255,255,.3) 0 20%, transparent 20% 100%);
+  }
+  .tile.concerthall{
+    background:var(--concerthall) !important;
+    background-image: linear-gradient(135deg, rgba(255,255,255,.3) 0 20%, transparent 20% 100%);
+  }
+  .store-badge{
+    position:absolute; right:2px; bottom:2px; font-size:12px; line-height:1;
+    background:#fff; border-radius:50%; width:16px; height:16px;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 1px 2px rgba(0,0,0,.35); pointer-events:none; z-index:3;
+  }
+  .concerthall-overlay{
+    position:absolute; left:0; top:0; height:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:2px; pointer-events:none; z-index:2;
+  }
+  .concerthall-icon{ font-size:20px; line-height:1; }
+  .concerthall-label{
+    font-family:var(--font-heading); font-size:7px; font-weight:700; color:#fff;
+    text-shadow:0 1px 1px rgba(0,0,0,.4); text-align:center; white-space:nowrap;
+  }
   .tile:hover{ filter:brightness(1.12); }
 
   #tooltip{
@@ -682,6 +736,20 @@
     display:flex; align-items:center; justify-content:center; font-size:16px;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 2px 3px rgba(0,0,0,.1);
   }
+  .store-type-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:8px;
+  }
+  .store-type-btn{
+    display:flex; align-items:center; gap:8px;
+    background:#fff; border:2px solid transparent; border-radius:12px; padding:9px 10px;
+    cursor:pointer; font-family:var(--font-body); color:var(--text); text-align:left;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(0,0,0,.05), 0 2px 3px rgba(0,0,0,.08);
+    transition:transform .08s, border-color .08s;
+  }
+  .store-type-btn:hover{ transform:translateY(-1px); }
+  .store-type-btn.selected{ border-color:var(--accent2); background:linear-gradient(180deg,#e2f0fd,#cfe6fb); }
+  .store-type-icon{ font-size:18px; flex-shrink:0; }
+  .store-type-name{ font-size:11px; font-weight:700; line-height:1.2; }
   .modal-footer{
     padding:12px 16px; flex-shrink:0; display:flex; gap:8px;
   }
@@ -895,8 +963,9 @@ const SFX_FILES = {
   event:   'soundfx/event.mp3',
   fire:    'soundfx/fire.mp3',
   fulfill: 'soundfx/fulfill.mp3',
+  landscape: 'soundfx/landscape.mp3',
 };
-const SFX_VOLUME = { bubble:.5, click:.25, coin:.5, event:.55, fire:.4, fulfill:.55 };
+const SFX_VOLUME = { bubble:.5, click:.25, coin:.5, event:.55, fire:.4, fulfill:.55, landscape:.5 };
 const sfxAudio = {};
 Object.entries(SFX_FILES).forEach(([key, path])=>{
   try{
@@ -1134,7 +1203,8 @@ function triggerFireAt(i, targetTile){
   setTimeout(()=>{
     const cur = state.tiles[i];
     if(cur === targetTile){
-      if(cur.type === 'house') state.housingCap = Math.max(4, state.housingCap - 4);
+      if(cur.type === 'house') state.housingCap = Math.max(0, state.housingCap - 4);
+      if(cur.type === 'apartment') state.housingCap = Math.max(0, state.housingCap - housingCapOf(cur));
       state.tiles[i] = null;
       state.happiness = Math.max(0, state.happiness - 10);
       log(`The fire burned itself out, leaving nothing behind.`);
@@ -1184,13 +1254,65 @@ function trySpawnTruck(farmIdx){
 const BUILDINGS = {
   road:     { name:'Road',      cost:{coins:5},            desc:'Connects town',                       category:'Infrastructure', unlockLevel:1 },
   bridge:   { name:'Bridge',    cost:{coins:25, wood:10},  desc:'Crosses a river, connects roads',      category:'Infrastructure', unlockLevel:1 },
+  river:    { name:'River',     cost:{coins:20, wood:5},   desc:'Carve a new river on empty land. +eco points, adds scenic water (needs a bridge to cross)', category:'Infrastructure', unlockLevel:1 },
+  clearmountain: { name:'Clear Mountain', cost:{coins:40}, desc:'Clear a mountain into buildable land. Costs eco points and happiness — think before you dig!', category:'Infrastructure', unlockLevel:1 },
   house:    { name:'House',     cost:{coins:20, wood:5},   desc:'+4 pop capacity',                      category:'Residential',    unlockLevel:1 },
+  apartment: { name:'Apartment', cost:{coins:80, wood:15}, desc:'+20 pop capacity to start. Upgradable up to 50 residents (costs coins & wood)', category:'Residential', unlockLevel:2 },
   farm:     { name:'Farm',      cost:{coins:15},           desc:'Produces food, 1 job',                 category:'Production',     unlockLevel:1 },
   factory:  { name:'Factory',   cost:{coins:30, wood:5},   desc:'Produces coins, 2 jobs',                category:'Production',     unlockLevel:1 },
-  store:    { name:'Store',     cost:{coins:35, wood:5},   desc:'Sells goods, 2 jobs, +happiness',       category:'Production',     unlockLevel:2 },
-  park:     { name:'Park',      cost:{coins:15},           desc:'+happiness nearby',                    category:'Decoration',     unlockLevel:1 },
+  store:    { name:'Store',     cost:{coins:35, wood:5},   desc:'Sells goods, 2 jobs, +happiness. Click after placing to choose a store type', category:'Production',     unlockLevel:2 },
+  park:     { name:'Park',      cost:{coins:15},           desc:'+happiness nearby, +eco points',       category:'Residential',    unlockLevel:1 },
+  cinema:      { name:'Movie Theater', cost:{coins:60, wood:10},  desc:'+10% happiness in the adjacent area, visitors +5% happiness per visit, 2 jobs', category:'Entertainment', unlockLevel:2 },
+  restaurant:  { name:'Restaurant',    cost:{coins:45, wood:5},   desc:'Serves a random cuisine, 2 jobs, +happiness',        category:'Entertainment', unlockLevel:2 },
+  concerthall: { name:'Concert Hall',  cost:{coins:120, wood:20}, desc:'Needs 2 tiles side by side. Hosts a concert every season, +20% happiness per visit', category:'Entertainment', unlockLevel:3, width:2 },
   townhall: { name:'Town Hall', cost:{coins:80, wood:15},  desc:'Landmark building, boosts town happiness (only 1 per map)', category:'Landmark', unlockLevel:1 },
+  stadium:    { name:'Stadium',     cost:{coins:200, wood:40}, desc:'Major landmark. Big +happiness boost and 4 jobs',            category:'Landmark', unlockLevel:3 },
+  clocktower: { name:'Clock Tower', cost:{coins:70, wood:15},  desc:'+happiness aura for the whole town and speeds up citizen requests', category:'Landmark', unlockLevel:2 },
+  statue:     { name:'Statue',      cost:{coins:10},           desc:'Cheap decoration, small +happiness',                         category:'Landmark', unlockLevel:1 },
+  fishery: { name:'Fishery', cost:{coins:25, wood:10}, desc:'Must be placed next to a river. Produces food, 2 jobs', category:'Production', unlockLevel:1 },
+  mine:    { name:'Mine',    cost:{coins:35, wood:5},  desc:'Must be placed next to a mountain. Produces coins, 2 jobs', category:'Production', unlockLevel:2 },
 };
+
+// ---- Apartment upgrade tiers: index 0 = level 1 (built at base cost above) ----
+const APARTMENT_LEVELS = [
+  { cap:20 },
+  { cap:35, upgradeCost:{coins:70, wood:15} },
+  { cap:50, upgradeCost:{coins:120, wood:25} },
+];
+function apartmentCapForLevel(level){
+  const entry = APARTMENT_LEVELS[Math.max(1, level||1) - 1] || APARTMENT_LEVELS[0];
+  return entry.cap;
+}
+function housingCapOf(t){
+  if(!t) return 0;
+  if(t.type === 'house') return 4;
+  if(t.type === 'apartment') return apartmentCapForLevel(t.level || 1);
+  return 0;
+}
+
+// ---- Eco score: rewards greening the town, penalizes clearing nature ----
+const ECO_RIVER_BONUS = 8;
+const ECO_PARK_BONUS = 3;
+const ECO_MOUNTAIN_PENALTY = 15;
+const MOUNTAIN_CLEAR_HAPPINESS_PENALTY = 6;
+
+// ---- Store sub-types: pick after placing a store ----
+const STORE_TYPES = [
+  { key:'gaming',       icon:'🎮', name:'Gaming Store' },
+  { key:'supermarket',  icon:'🥫', name:'Supermarket' },
+  { key:'fashion',      icon:'👔', name:'Fashion Store' },
+  { key:'convenience',  icon:'🏪', name:'Convenience Store' },
+  { key:'bookstore',    icon:'📚', name:'Bookstore' },
+  { key:'electronics',  icon:'📱', name:'Electronics Store' },
+];
+
+// ---- Restaurant cuisines ----
+const RESTAURANT_CUISINES = ['ramen', 'pasta', 'common'];
+const RESTAURANT_CUISINE_NAMES = { ramen:'Ramen', pasta:'Pasta', common:'Home-style' };
+
+// ---- Seasons (drive the Concert Hall's once-per-season show) ----
+const SEASON_NAMES = ['🌱 Spring','☀️ Summer','🍂 Autumn','❄️ Winter'];
+const SEASON_LENGTH = 40; // ticks per season
 
 const LEVEL_REQS = [
   null, // level 1 has no requirement (starting level)
@@ -1205,6 +1327,8 @@ const RES_FILES = {
   road1:'road 1.png', road2:'road 2.png', road3:'road 3.png', road4:'road 4.png', roadX:'road X.png',
   house:'house.png', farm:'farm.png', factory:'factory.png', park:'park.png',
   townhall:'town hall.png', store:'store.png', bridge:'bridge.png',
+  cinema:'cinema.png', concerthall:'concert hall.png',
+  restaurant_ramen:'ramen-res.png', restaurant_pasta:'pasta-res.png', restaurant_common:'common-res.png',
 };
 const _resCache = {};
 function resFileFor(type, variant){
@@ -1279,6 +1403,17 @@ function buildableIndices(){
   return state.tiles
     .map((t,i)=> (t && !t.terrain) ? i : -1)
     .filter(i=> i !== -1);
+}
+function isAdjacentToTerrain(i, terrainType){
+  const r = Math.floor(i/COLS), c = i%COLS;
+  const neighbors = [[-1,0],[1,0],[0,-1],[0,1]];
+  for(const [dr,dc] of neighbors){
+    const nr=r+dr, nc=c+dc;
+    if(nr<0||nr>=ROWS||nc<0||nc>=COLS) continue;
+    const n = state.tiles[nr*COLS+nc];
+    if(n && n.type === terrainType) return true;
+  }
+  return false;
 }
 function riverAdjacentFarmIndices(){
   const out = [];
@@ -1478,12 +1613,14 @@ function growMountainBlob(tiles, startR, startC, size){
 let state = {
   coins: 100, food: 30, wood: 20,
   population: 4, housingCap: 4, happiness: 70,
+  ecoScore: 0,
   tiles: generateTerrain(Array(ROWS*COLS).fill(null)),
   quests: [],
   nextQuestId: 1,
   mayorName: 'Mayor',
   townHallLevel: 1,
-  tick: 0
+  tick: 0,
+  season: 0
 };
 
 let selectedBuild = null;
@@ -1526,7 +1663,9 @@ function makeQuest(){
 function maybeGenerateQuest(){
   const MAX_ACTIVE = 3;
   if(state.quests.length >= MAX_ACTIVE) return;
-  if(Math.random() > 0.22) return;
+  // Clock Towers speed up citizen requests: they appear more often.
+  const clockTowerBonus = countType('clocktower') > 0 ? 0.16 : 0;
+  if(Math.random() > (0.22 + clockTowerBonus)) return;
   const q = makeQuest();
   state.quests.push(q);
   log(`${q.name} has a request: needs ${q.need.amount} ${RES_LABEL[q.need.res]}.`);
@@ -1691,6 +1830,8 @@ function load(){
       if(!state.quests) state.quests = [];
       if(!state.nextQuestId) state.nextQuestId = 1;
       if(!state.mayorName) state.mayorName = 'Mayor';
+      if(state.ecoScore == null) state.ecoScore = 0;
+      if(state.season == null) state.season = Math.floor((state.tick||0) / SEASON_LENGTH) % SEASON_NAMES.length;
       const wanted = ROWS*COLS;
       if(!Array.isArray(state.tiles)) state.tiles = generateTerrain(Array(wanted).fill(null));
       else if(state.tiles.length < wanted){
@@ -1718,10 +1859,26 @@ function jobsAvailable(){
     if(t && t.type==='farm') jobs += 1;
     if(t && t.type==='factory') jobs += 2;
     if(t && t.type==='store') jobs += 2;
+    if(t && t.type==='restaurant') jobs += 2;
+    if(t && t.type==='cinema') jobs += 2;
+    if(t && t.type==='concerthall' && t.role !== 'secondary') jobs += 3;
+    if(t && t.type==='fishery') jobs += 2;
+    if(t && t.type==='mine') jobs += 2;
+    if(t && t.type==='stadium') jobs += 4;
   });
   return jobs;
 }
 function countType(type){ return state.tiles.filter(t=>t && t.type===type).length; }
+// Multi-tile buildings (like the Concert Hall) occupy more than one tile —
+// use this to count actual buildings instead of tiles.
+function countMainType(type){
+  return state.tiles.filter(t=> t && t.type===type && t.role !== 'secondary').length;
+}
+function mainIndicesOfType(type){
+  const out = [];
+  state.tiles.forEach((t,i)=>{ if(t && t.type===type && t.role !== 'secondary') out.push(i); });
+  return out;
+}
 
 let _prevStatVals = {};
 function renderStats(){
@@ -1743,6 +1900,7 @@ function renderStats(){
   document.getElementById('statbar').innerHTML = `
     <div class="statLeft">
       <div class="townBadge">🏛️ Lv.${state.townHallLevel || 1}</div>
+      <div class="townBadge">${SEASON_NAMES[state.season || 0]}</div>
       ${levelBarHtml}
     </div>
     <div class="statResources">
@@ -1752,6 +1910,7 @@ function renderStats(){
       <div class="stat"><span>👥</span><span class="val" data-key="population">${state.population}/${state.housingCap}</span></div>
       <div class="stat"><span>💼</span><span class="val" data-key="jobs">${employed}/${jobs}</span></div>
       <div class="stat ${happinessClass}"><span>😊</span><span class="val" data-key="happiness">${Math.floor(state.happiness)}%</span></div>
+      <div class="stat eco ${state.ecoScore < 0 ? 'bad' : ''}" title="Eco score: rivers &amp; parks help, clearing mountains hurts"><span>🌿</span><span class="val" data-key="eco">${Math.floor(state.ecoScore || 0)}</span></div>
     </div>
     <div class="statRight">
       <button class="iconBtn" id="bgmBtn" title="Background Music">${bgmOn ? '🎵' : '🔇'}</button>
@@ -1764,7 +1923,8 @@ function renderStats(){
 
   // bump animation when a resource value changes
   const nowVals = { coins:Math.floor(state.coins), food:Math.floor(state.food), wood:Math.floor(state.wood),
-                     population:state.population, jobs:employed, happiness:Math.floor(state.happiness) };
+                     population:state.population, jobs:employed, happiness:Math.floor(state.happiness),
+                     eco:Math.floor(state.ecoScore || 0) };
   document.querySelectorAll('#statbar .val[data-key]').forEach(el=>{
     const key = el.dataset.key;
     const prev = _prevStatVals[key];
@@ -1809,32 +1969,51 @@ function mayorQuoteFor(happiness){
 }
 
 const BUILD_ICONS = {
-  road:'🛣️', bridge:'🌉', house:'🏠', farm:'🌾', factory:'🏭', store:'🏪', park:'🌳', townhall:'🏛️'
+  road:'🛣️', bridge:'🌉', river:'💧', clearmountain:'⛏️', house:'🏠', apartment:'🏢',
+  farm:'🌾', factory:'🏭', store:'🏪', park:'🌳', townhall:'🏛️',
+  cinema:'🎬', restaurant:'🍽️', concerthall:'🎵',
+  stadium:'🏟️', clocktower:'🕰️', statue:'🗿', fishery:'🎣', mine:'⛏️'
 };
 
+const BUILD_CATEGORY_ORDER = ['Infrastructure','Residential','Production','Decoration','Entertainment','Landmark'];
+let selectedBuildCategory = 'Infrastructure';
+
 function renderBuildList(){
-  const list = document.getElementById('buildBar');
-  list.innerHTML = '';
+  const bar = document.getElementById('buildBar');
+  bar.innerHTML = '';
 
   const categories = {};
   Object.entries(BUILDINGS).forEach(([key, b])=>{
     if(!categories[b.category]) categories[b.category] = [];
     categories[b.category].push([key, b]);
   });
+  const catNames = Object.keys(categories).sort((a,b)=> BUILD_CATEGORY_ORDER.indexOf(a) - BUILD_CATEGORY_ORDER.indexOf(b));
+  if(!catNames.includes(selectedBuildCategory)) selectedBuildCategory = catNames[0];
 
-  Object.entries(categories).forEach(([cat, items])=>{
-    const group = document.createElement('div');
-    group.className = 'dock-group';
+  const tabs = document.createElement('div');
+  tabs.className = 'dock-tabs';
+  catNames.forEach(cat=>{
+    const tab = document.createElement('div');
+    tab.className = 'dock-tab' + (cat === selectedBuildCategory ? ' active' : '');
+    tab.textContent = cat;
+    tab.onclick = ()=>{ selectedBuildCategory = cat; renderBuildList(); };
+    tabs.appendChild(tab);
+  });
+  bar.appendChild(tabs);
 
-    const label = document.createElement('div');
-    label.className = 'dock-groupLabel';
-    label.textContent = cat;
-    group.appendChild(label);
+  const panel = document.createElement('div');
+  panel.className = 'dock-panel';
 
-    const row = document.createElement('div');
-    row.className = 'dock-row';
-
-    items.forEach(([key, b])=>{
+  if(selectedBuildCategory === 'Infrastructure'){
+    const bulldoze = document.createElement('div');
+    bulldoze.className = 'dock-btn bulldoze' + (selectedBuild==='bulldoze' ? ' selected':'');
+    bulldoze.innerHTML = `<span class="dock-icon">🔨</span><span class="dock-name">Bulldoze</span>`;
+    bulldoze.title = 'Demolish a tile';
+    bulldoze.onclick = ()=>{ selectedBuild = (selectedBuild==='bulldoze') ? null : 'bulldoze'; renderBuildList(); updateGridCursor(); };
+    panel.appendChild(bulldoze);
+  }
+  {
+    (categories[selectedBuildCategory] || []).forEach(([key, b])=>{
       const unlocked = state.townHallLevel >= b.unlockLevel;
       const isNew = unlocked && countType(key) === 0;
       const btn = document.createElement('div');
@@ -1851,33 +2030,11 @@ function renderBuildList(){
       if(unlocked){
         btn.onclick = ()=>{ selectedBuild = (selectedBuild===key) ? null : key; renderBuildList(); updateGridCursor(); };
       }
-      row.appendChild(btn);
+      panel.appendChild(btn);
     });
+  }
 
-    group.appendChild(row);
-    list.appendChild(group);
-  });
-
-  const divider = document.createElement('div');
-  divider.className = 'dock-divider';
-  list.appendChild(divider);
-
-  const toolGroup = document.createElement('div');
-  toolGroup.className = 'dock-group';
-  const toolLabel = document.createElement('div');
-  toolLabel.className = 'dock-groupLabel';
-  toolLabel.textContent = 'Tool';
-  toolGroup.appendChild(toolLabel);
-  const toolRow = document.createElement('div');
-  toolRow.className = 'dock-row';
-  const bulldoze = document.createElement('div');
-  bulldoze.className = 'dock-btn bulldoze' + (selectedBuild==='bulldoze' ? ' selected':'');
-  bulldoze.innerHTML = `<span class="dock-icon">🔨</span><span class="dock-name">Bulldoze</span>`;
-  bulldoze.title = 'Demolish a tile';
-  bulldoze.onclick = ()=>{ selectedBuild = (selectedBuild==='bulldoze') ? null : 'bulldoze'; renderBuildList(); updateGridCursor(); };
-  toolRow.appendChild(bulldoze);
-  toolGroup.appendChild(toolRow);
-  list.appendChild(toolGroup);
+  bar.appendChild(panel);
   updateGridCursor();
 }
 
@@ -1910,9 +2067,38 @@ function renderGrid(){
       applyResImage(div, resFileFor(t.type));
       if(t.type === 'house' && houseResidents(i).occupied > 0) div.classList.add('occupied');
       if(t.type === 'factory') div.classList.add('smoking');
+      if(t.type === 'store' && t.storeType){
+        const st = STORE_TYPES.find(s=>s.key===t.storeType);
+        if(st){
+          const badge = document.createElement('div');
+          badge.className = 'store-badge';
+          badge.textContent = st.icon;
+          div.appendChild(badge);
+        }
+      }
+    } else if(t && t.type === 'apartment'){
+      applyResImage(div, resFileFor('apartment'));
+      if(houseResidents(i).occupied > 0) div.classList.add('occupied');
+      const badge = document.createElement('div');
+      badge.className = 'store-badge';
+      badge.textContent = 'L' + (t.level || 1);
+      div.appendChild(badge);
     } else if(t && t.type === 'park'){
       applyResImage(div, resFileFor('park'));
       div.classList.add('swaying');
+    } else if(t && t.type === 'cinema'){
+      applyResImage(div, resFileFor('cinema'));
+    } else if(t && t.type === 'restaurant'){
+      applyResImage(div, resFileFor('restaurant', 'restaurant_' + (t.cuisine || 'common')));
+    } else if(t && t.type === 'concerthall'){
+      applyResImage(div, resFileFor('concerthall'));
+      if(t.role !== 'secondary'){
+        const overlay = document.createElement('div');
+        overlay.className = 'concerthall-overlay';
+        overlay.style.width = (TILE_W*2)+'px';
+        overlay.innerHTML = `<span class="concerthall-icon">🎵</span><span class="concerthall-label">Concert Hall</span>`;
+        div.appendChild(overlay);
+      }
     }
     div.dataset.i = i;
     div.dataset.noClickSfx = '1';
@@ -2000,13 +2186,14 @@ function seededRand(seed){
 }
 
 function houseResidents(i){
-  const houseIndices = state.tiles.map((t,idx)=> (t && t.type==='house') ? idx : -1).filter(idx=>idx!==-1);
-  const order = houseIndices.indexOf(i);
-  if(order === -1) return { occupied:0, residents:[] };
+  const housingIndices = state.tiles.map((t,idx)=> (t && (t.type==='house' || t.type==='apartment')) ? idx : -1).filter(idx=>idx!==-1);
+  const order = housingIndices.indexOf(i);
+  if(order === -1) return { occupied:0, residents:[], capacity:0 };
 
   let before = 0;
-  for(let k=0;k<order;k++) before += 4;
-  const occupied = Math.max(0, Math.min(4, state.population - before));
+  for(let k=0;k<order;k++) before += housingCapOf(state.tiles[housingIndices[k]]);
+  const capacity = housingCapOf(state.tiles[i]);
+  const occupied = Math.max(0, Math.min(capacity, state.population - before));
 
   const jobs = jobsAvailable();
   const farmJobs = countType('farm') * 1;
@@ -2029,7 +2216,7 @@ function houseResidents(i){
 
     residents.push({ name: `${first} ${last}`, job: jobTitle, happiness: personalHappiness });
   }
-  return { occupied, residents };
+  return { occupied, residents, capacity };
 }
 
 function productionRate(i, type){
@@ -2075,6 +2262,19 @@ function tileInfo(t, i){
     };
   }
 
+  if(t.type === 'apartment'){
+    const level = t.level || 1;
+    const cap = housingCapOf(t);
+    const maxLevel = APARTMENT_LEVELS.length;
+    const { occupied, residents } = houseResidents(i);
+    return {
+      name:'Apartment',
+      sub:`Level ${level}`,
+      facts:[`+${cap} population capacity`, `${occupied}/${cap} residents`, level<maxLevel ? 'Click to upgrade' : 'Max level reached'],
+      residents
+    };
+  }
+
   if(t.type === 'farm'){
     const rate = productionRate(i, 'farm');
     const fraction = Math.min(1, (t.growth || 0) / GROWTH_TICKS);
@@ -2084,6 +2284,25 @@ function tileInfo(t, i){
   if(t.type === 'factory'){
     const rate = productionRate(i, 'factory');
     return { name:'Factory', facts:[`+2 jobs`, `Production rate ${rate}%`, `Produces coins`] };
+  }
+
+  if(t.type === 'store'){
+    const st = STORE_TYPES.find(s=>s.key===t.storeType);
+    return { name:'Store', sub: st ? st.name : undefined, facts:[st ? `${st.icon} ${st.name}` : 'Click to choose a store type', 'Sells goods · 2 jobs · +happiness'] };
+  }
+
+  if(t.type === 'cinema'){
+    return { name:'Movie Theater', facts:['+10% happiness in the adjacent area', 'Visitors +5% happiness per visit', '2 jobs'] };
+  }
+
+  if(t.type === 'restaurant'){
+    const cuisine = RESTAURANT_CUISINE_NAMES[t.cuisine] || 'Home-style';
+    return { name:'Restaurant', sub:cuisine, facts:[`Serves ${cuisine} cuisine`, '2 jobs · +happiness'] };
+  }
+
+  if(t.type === 'concerthall'){
+    const ticksLeft = SEASON_LENGTH - (state.tick % SEASON_LENGTH);
+    return { name:'Concert Hall', facts:[`Next concert in ${ticksLeft} ticks`, '+20% happiness per visit', '2 tiles · 3 jobs'] };
   }
 
   const b = BUILDINGS[t.type];
@@ -2200,6 +2419,75 @@ function openHouseModal(i){
   openModal('🏠 House', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
 }
 
+function openApartmentModal(i){
+  const t = state.tiles[i];
+  const level = t.level || 1;
+  const cap = housingCapOf(t);
+  const maxLevel = APARTMENT_LEVELS.length;
+  const { occupied, residents } = houseResidents(i);
+  let body = `
+    <div class="modal-stat-row"><span>Level</span><span class="val">${level}/${maxLevel}</span></div>
+    <div class="modal-stat-row"><span>Capacity</span><span class="val">${cap} population</span></div>
+    <div class="modal-stat-row"><span>Occupancy</span><span class="val">${occupied}/${cap} residents</span></div>
+    <div class="modal-section-label">Residents</div>`;
+  if(residents.length === 0){
+    body += `<div class="modal-empty">No one lives here yet.</div>`;
+  } else {
+    body += residents.map((r, idx)=>{
+      const color = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+      const emoji = AVATAR_EMOJI[idx % AVATAR_EMOJI.length];
+      return `
+        <div class="resident-row">
+          <div class="resident-avatar" style="background:${color}">${emoji}</div>
+          <div class="resident-info">
+            <div class="resident-name">${r.name}</div>
+            <div class="resident-job">${r.job}</div>
+          </div>
+          <div class="resident-happy">
+            <div class="pct">${r.happiness}%</div>
+            <div class="bar"><div class="bar-fill" style="width:${r.happiness}%"></div></div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  let footer;
+  if(level < maxLevel){
+    const nextTier = APARTMENT_LEVELS[level];
+    const cost = nextTier.upgradeCost;
+    const costStr = Object.entries(cost).map(([k,v])=>`${v}${k==='coins'?'🪙':k==='wood'?'🪵':''}`).join(' ');
+    const canAfford = Object.entries(cost).every(([k,v])=> state[k] >= v);
+    footer = `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>
+      <button class="modal-btn-primary" ${canAfford ? '' : 'disabled'} onclick="upgradeApartment(${i})">Upgrade to Lv.${level+1} — ${nextTier.cap} cap (${costStr})</button>`;
+  } else {
+    footer = `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`;
+  }
+  openModal('🏢 Apartment', body, footer);
+}
+
+function upgradeApartment(i){
+  const t = state.tiles[i];
+  if(!t || t.type !== 'apartment') return;
+  const level = t.level || 1;
+  const maxLevel = APARTMENT_LEVELS.length;
+  if(level >= maxLevel) return;
+  const nextTier = APARTMENT_LEVELS[level];
+  const cost = nextTier.upgradeCost;
+  for(const [res, amt] of Object.entries(cost)){
+    if(state[res] < amt){ log(`Not enough ${res} to upgrade the apartment.`); return; }
+  }
+  for(const [res, amt] of Object.entries(cost)){ state[res] -= amt; }
+  const oldCap = housingCapOf(t);
+  t.level = level + 1;
+  const newCap = housingCapOf(t);
+  state.housingCap += (newCap - oldCap);
+  log(`Apartment upgraded to level ${t.level}! Capacity is now ${newCap} residents.`);
+  playBuildSound('apartment');
+  closeBuildingModal();
+  renderGrid(); renderStats(); save();
+  popTile(i);
+}
+
 function openFactoryModal(i){
   const rate = productionRate(i, 'factory');
   const productCount = Math.max(1, Math.round(rate / 50));
@@ -2225,6 +2513,61 @@ function openFarmModal(i){
     <div class="modal-section-label">Crops</div>
     <div class="modal-products">${products}</div>`;
   openModal('🌾 Farm', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
+}
+
+function openStoreModal(i){
+  const t = state.tiles[i];
+  if(!t || t.type !== 'store') return;
+  const current = t.storeType;
+  const optionsHtml = STORE_TYPES.map(st=>{
+    const sel = current === st.key ? ' selected' : '';
+    return `<button class="store-type-btn${sel}" onclick="chooseStoreType(${i}, '${st.key}')">
+      <span class="store-type-icon">${st.icon}</span>
+      <span class="store-type-name">${st.name}</span>
+    </button>`;
+  }).join('');
+  const body = `
+    <div class="modal-section-label">${current ? 'Change store type' : 'Choose a store type'}</div>
+    <div class="store-type-grid">${optionsHtml}</div>`;
+  openModal('🏪 Store', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
+}
+function chooseStoreType(i, key){
+  const t = state.tiles[i];
+  if(!t || t.type !== 'store') return;
+  t.storeType = key;
+  const st = STORE_TYPES.find(s=>s.key===key);
+  log(`The store is now a ${st.name.toLowerCase()}.`);
+  renderGrid(); save();
+  closeBuildingModal();
+}
+
+function openCinemaModal(i){
+  const body = `
+    <div class="modal-stat-row"><span>Happiness</span><span class="val">+10% adjacent area</span></div>
+    <div class="modal-stat-row"><span>Per visit</span><span class="val">+5% 😊</span></div>
+    <div class="modal-stat-row"><span>Jobs</span><span class="val">+2 jobs</span></div>`;
+  openModal('🎬 Movie Theater', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
+}
+
+function openRestaurantModal(i){
+  const t = state.tiles[i];
+  const cuisine = RESTAURANT_CUISINE_NAMES[t.cuisine] || 'Home-style';
+  const body = `
+    <div class="modal-stat-row"><span>Cuisine</span><span class="val">${cuisine}</span></div>
+    <div class="modal-stat-row"><span>Jobs</span><span class="val">+2 jobs</span></div>
+    <div class="modal-stat-row"><span>Happiness</span><span class="val">+happiness</span></div>`;
+  openModal('🍽️ Restaurant', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
+}
+
+function openConcertHallModal(i){
+  const ticksLeft = SEASON_LENGTH - (state.tick % SEASON_LENGTH);
+  const body = `
+    <div class="modal-stat-row"><span>Current season</span><span class="val">${SEASON_NAMES[state.season || 0]}</span></div>
+    <div class="modal-stat-row"><span>Next concert</span><span class="val">in ${ticksLeft} ticks</span></div>
+    <div class="modal-stat-row"><span>Per visit</span><span class="val">+20% 😊</span></div>
+    <div class="modal-stat-row"><span>Jobs</span><span class="val">+3 jobs</span></div>
+    <div class="modal-stat-row"><span>Footprint</span><span class="val">2 tiles</span></div>`;
+  openModal('🎵 Concert Hall', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
 }
 
 function openTownHallModal(i){
@@ -2255,8 +2598,13 @@ function handleTileClick(i){
     if(current){
       if(current.type === 'townhall') openTownHallModal(i);
       else if(current.type === 'house') openHouseModal(i);
+      else if(current.type === 'apartment') openApartmentModal(i);
       else if(current.type === 'factory') openFactoryModal(i);
       else if(current.type === 'farm') openFarmModal(i);
+      else if(current.type === 'store') openStoreModal(i);
+      else if(current.type === 'cinema') openCinemaModal(i);
+      else if(current.type === 'restaurant') openRestaurantModal(i);
+      else if(current.type === 'concerthall') openConcertHallModal(i);
     }
     return;
   }
@@ -2275,9 +2623,48 @@ function handleTileClick(i){
     for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
     state.tiles[i] = { type:'bridge' };
     log(`Built a bridge across the river.`);
-    playBuildSound('bridge');
+    playBuildSound('bridge'); playSfx('landscape');
     renderGrid(); renderStats(); save();
     popTile(i);
+    return;
+  }
+
+  // River: carve a new river tile on empty, buildable land.
+  if(selectedBuild === 'river'){
+    if(current){ log("A river needs clear, empty land."); return; }
+    const b = BUILDINGS.river;
+    for(const [res, amt] of Object.entries(b.cost)){
+      if(state[res] < amt){ log(`Not enough ${res} to carve a river.`); return; }
+    }
+    for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
+    state.tiles[i] = { type:'river', terrain:true };
+    state.ecoScore = (state.ecoScore || 0) + ECO_RIVER_BONUS;
+    log(`Carved a new river. +${ECO_RIVER_BONUS} eco points.`);
+    playBuildSound('river'); playSfx('landscape');
+    renderGrid(); renderStats(); save();
+    showFloater(i, `+${ECO_RIVER_BONUS} 🌿`, 'good');
+    popTile(i);
+    return;
+  }
+
+  // Clear Mountain: destroy natural terrain to reclaim buildable land — costs eco points & happiness.
+  if(selectedBuild === 'clearmountain'){
+    if(!current || current.type !== 'mountain'){
+      log("Clear Mountain can only target a mountain tile.");
+      return;
+    }
+    const b = BUILDINGS.clearmountain;
+    for(const [res, amt] of Object.entries(b.cost)){
+      if(state[res] < amt){ log(`Not enough ${res} to clear the mountain.`); return; }
+    }
+    for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
+    state.tiles[i] = null;
+    state.ecoScore = (state.ecoScore || 0) - ECO_MOUNTAIN_PENALTY;
+    state.happiness = Math.max(0, state.happiness - MOUNTAIN_CLEAR_HAPPINESS_PENALTY);
+    log(`Cleared a mountain into buildable land. Nature pays the price: -${ECO_MOUNTAIN_PENALTY} eco points, -${MOUNTAIN_CLEAR_HAPPINESS_PENALTY}% happiness.`);
+    playBulldozeSound(); playSfx('landscape');
+    renderGrid(); renderStats(); save();
+    showFloater(i, `-${ECO_MOUNTAIN_PENALTY} 🌿`, 'bad');
     return;
   }
 
@@ -2288,17 +2675,44 @@ function handleTileClick(i){
 
   if(selectedBuild === 'bulldoze'){
     if(current){
-      if(current.type==='house') state.housingCap = Math.max(4, state.housingCap - 4);
+      if(current.type==='house') state.housingCap = Math.max(0, state.housingCap - 4);
+      if(current.type==='apartment') state.housingCap = Math.max(0, state.housingCap - housingCapOf(current));
       if(current.type==='bridge'){
         state.tiles[i] = { type:'river', terrain:true };
         log(`Demolished a bridge. The river flows freely again.`);
+      } else if(current.type==='concerthall'){
+        const pairIdx = current.pair;
+        state.tiles[i] = null;
+        if(pairIdx != null && state.tiles[pairIdx]) state.tiles[pairIdx] = null;
+        log('Demolished the concert hall.');
       } else {
         state.tiles[i] = null;
         log(`Demolished a ${BUILDINGS[current.type].name.toLowerCase()}.`);
       }
-      playBulldozeSound();
+      playBulldozeSound(); playSfx('landscape');
       renderGrid(); renderStats(); save();
     }
+    return;
+  }
+
+  // Concert Hall needs two clear tiles side by side.
+  if(selectedBuild === 'concerthall'){
+    const c = i % COLS;
+    const j = i + 1;
+    const tj = (c + 1 < COLS) ? state.tiles[j] : 'edge';
+    if(current){ log("That tile is already occupied."); return; }
+    if(tj === 'edge' || tj){ log("Concert Hall needs two clear tiles side by side."); return; }
+    const b = BUILDINGS.concerthall;
+    for(const [res, amt] of Object.entries(b.cost)){
+      if(state[res] < amt){ log(`Not enough ${res} to build a concert hall.`); return; }
+    }
+    for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
+    state.tiles[i] = { type:'concerthall', pair:j };
+    state.tiles[j] = { type:'concerthall', pair:i, role:'secondary' };
+    log('Built a concert hall! It will host a concert once every season.');
+    playBuildSound('concerthall');
+    renderGrid(); renderStats(); save();
+    popTile(i); popTile(j);
     return;
   }
 
@@ -2309,41 +2723,88 @@ function handleTileClick(i){
     return;
   }
 
+  if(selectedBuild === 'fishery' && !isAdjacentToTerrain(i, 'river')){
+    log("A Fishery must be placed next to a river.");
+    return;
+  }
+
+  if(selectedBuild === 'mine' && !isAdjacentToTerrain(i, 'mountain')){
+    log("A Mine must be placed next to a mountain.");
+    return;
+  }
+
   const b = BUILDINGS[selectedBuild];
   for(const [res, amt] of Object.entries(b.cost)){
     if(state[res] < amt){ log(`Not enough ${res} to build a ${b.name.toLowerCase()}.`); return; }
   }
   for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
   state.tiles[i] = { type: selectedBuild };
-  if(selectedBuild === 'park') state.tiles[i].variant = Math.random() < 0.5 ? 'p1' : 'p2';
+  if(selectedBuild === 'park'){
+    state.tiles[i].variant = Math.random() < 0.5 ? 'p1' : 'p2';
+    state.ecoScore = (state.ecoScore || 0) + ECO_PARK_BONUS;
+  }
   if(selectedBuild === 'house') state.housingCap += 4;
+  if(selectedBuild === 'apartment'){
+    state.tiles[i].level = 1;
+    state.housingCap += apartmentCapForLevel(1);
+  }
   if(selectedBuild === 'farm') state.tiles[i].growth = 0;
+  if(selectedBuild === 'restaurant'){
+    state.tiles[i].cuisine = RESTAURANT_CUISINES[Math.floor(Math.random()*RESTAURANT_CUISINES.length)];
+  }
   log(`Built a ${b.name.toLowerCase()}.`);
   playBuildSound(selectedBuild);
+  if(b.category === 'Infrastructure') playSfx('landscape');
   renderGrid(); renderStats(); save();
   popTile(i);
+  if(selectedBuild === 'store'){
+    setTimeout(()=> openStoreModal(i), 320);
+  }
 }
 
 function gameTick(){
   state.tick++;
+
+  // ---- Seasons: a new season triggers every Concert Hall's show ----
+  const newSeason = Math.floor(state.tick / SEASON_LENGTH) % SEASON_NAMES.length;
+  if(state.season == null) state.season = newSeason;
+  if(newSeason !== state.season){
+    state.season = newSeason;
+    log(`The season changed to ${SEASON_NAMES[state.season]}.`);
+    mainIndicesOfType('concerthall').forEach(i=>{
+      state.happiness = Math.min(100, state.happiness + 20);
+      showFloater(i, '+20% 😊', 'good');
+      log('🎶 A concert lit up the Concert Hall! The whole town is buzzing.');
+    });
+  }
+
   const jobs = jobsAvailable();
   const farms = countType('farm');
   const factories = countType('factory');
   const parks = countType('park');
   const townhalls = countType('townhall');
   const stores = countType('store');
+  const cinemas = countType('cinema');
+  const restaurants = countType('restaurant');
+  const concertHalls = countMainType('concerthall');
+  const fisheries = countType('fishery');
+  const mines = countType('mine');
+  const stadiums = countType('stadium');
+  const clockTowers = countType('clocktower');
+  const statues = countType('statue');
   const employed = Math.min(jobs, state.population);
   const unemployed = Math.max(0, state.population - jobs);
 
-  const foodProduced = farms * 3;
+  const foodProduced = farms * 3 + fisheries * 3;
   const foodConsumed = state.population * 1;
   state.food += foodProduced - foodConsumed;
   const starving = state.food < 0;
   if(state.food < 0) state.food = 0;
 
   const factoryWorkers = Math.min(employed, factories*2);
-  const coinsProduced = factoryWorkers * 2;
-  const upkeep = countType('house') * 0.5 + factories * 0.5;
+  const mineWorkers = Math.min(employed, mines*2);
+  const coinsProduced = factoryWorkers * 2 + mineWorkers * 2;
+  const upkeep = countType('house') * 0.5 + factories * 0.5 + mines * 0.5;
   state.coins += coinsProduced - upkeep;
   if(state.coins < 0) state.coins = 0;
   state.wood += 0.5;
@@ -2352,6 +2813,12 @@ function gameTick(){
   happinessDelta += parks * 1.5;
   happinessDelta += townhalls * 2;
   happinessDelta += stores * 1;
+  happinessDelta += cinemas * 1.5; // +10% happiness in the adjacent area
+  happinessDelta += restaurants * 1;
+  happinessDelta += concertHalls * 0.5; // ambient presence between shows
+  happinessDelta += stadiums * 3; // major landmark, big happiness boost
+  happinessDelta += clockTowers * 1.2; // town-wide happiness aura
+  happinessDelta += statues * 0.4; // cheap decoration, small happiness
   happinessDelta -= unemployed * 2;
   happinessDelta -= starving ? 8 : 0;
   happinessDelta += (state.food > state.population * 5) ? 1 : 0;
@@ -2382,6 +2849,15 @@ function gameTick(){
   // idle smoke puffs from active factories
   state.tiles.forEach((t, i)=>{
     if(t && t.type === 'factory' && Math.random() < 0.5) spawnSmoke(i);
+  });
+
+  // movie theaters occasionally draw a crowd for a screening
+  state.tiles.forEach((t, i)=>{
+    if(t && t.type === 'cinema' && Math.random() < 0.35){
+      state.happiness = Math.min(100, state.happiness + 3);
+      showFloater(i, '+5% 😊', 'good');
+      log('🎬 A crowd enjoyed a movie at the theater!');
+    }
   });
 
   renderStats();
