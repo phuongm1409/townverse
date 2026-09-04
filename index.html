@@ -1256,6 +1256,7 @@ const BUILDINGS = {
   bridge:   { name:'Bridge',    cost:{coins:25, wood:10},  desc:'Crosses a river, connects roads',      category:'Infrastructure', unlockLevel:1 },
   river:    { name:'River',     cost:{coins:20, wood:5},   desc:'Carve a new river on empty land. +eco points, adds scenic water (needs a bridge to cross)', category:'Infrastructure', unlockLevel:1 },
   clearmountain: { name:'Clear Mountain', cost:{coins:40}, desc:'Clear a mountain into buildable land. Costs eco points and happiness — think before you dig!', category:'Infrastructure', unlockLevel:1 },
+  clearriver: { name:'Clear River', cost:{coins:20}, desc:'Fill in a river tile into buildable land. Costs eco points — think before you dig!', category:'Infrastructure', unlockLevel:1 },
   house:    { name:'House',     cost:{coins:20, wood:5},   desc:'+4 pop capacity',                      category:'Residential',    unlockLevel:1 },
   apartment: { name:'Apartment', cost:{coins:80, wood:15}, desc:'+20 pop capacity to start. Upgradable up to 50 residents (costs coins & wood)', category:'Residential', unlockLevel:2 },
   farm:     { name:'Farm',      cost:{coins:15},           desc:'Produces food, 1 job',                 category:'Production',     unlockLevel:1 },
@@ -1266,11 +1267,14 @@ const BUILDINGS = {
   restaurant:  { name:'Restaurant',    cost:{coins:45, wood:5},   desc:'Serves a random cuisine, 2 jobs, +happiness',        category:'Entertainment', unlockLevel:2 },
   concerthall: { name:'Concert Hall',  cost:{coins:120, wood:20}, desc:'Needs 2 tiles side by side. Hosts a concert every season, +20% happiness per visit', category:'Entertainment', unlockLevel:3, width:2 },
   townhall: { name:'Town Hall', cost:{coins:80, wood:15},  desc:'Landmark building, boosts town happiness (only 1 per map)', category:'Landmark', unlockLevel:1 },
-  stadium:    { name:'Stadium',     cost:{coins:200, wood:40}, desc:'Major landmark. Big +happiness boost and 4 jobs',            category:'Landmark', unlockLevel:3 },
+  stadium:    { name:'Stadium',     cost:{coins:200, wood:40}, desc:'Major landmark. Big +happiness boost and 4 jobs',            category:'Landmark', unlockLevel:5 },
   clocktower: { name:'Clock Tower', cost:{coins:70, wood:15},  desc:'+happiness aura for the whole town and speeds up citizen requests', category:'Landmark', unlockLevel:2 },
   statue:     { name:'Statue',      cost:{coins:10},           desc:'Cheap decoration, small +happiness',                         category:'Landmark', unlockLevel:1 },
-  fishery: { name:'Fishery', cost:{coins:25, wood:10}, desc:'Must be placed next to a river. Produces food, 2 jobs', category:'Production', unlockLevel:1 },
+  fishery: { name:'Fishery', cost:{coins:25, wood:10}, desc:'Must be placed next to a river. Produces food, 2 jobs', category:'Production', unlockLevel:2 },
   mine:    { name:'Mine',    cost:{coins:35, wood:5},  desc:'Must be placed next to a mountain. Produces coins, 2 jobs', category:'Production', unlockLevel:2 },
+  sawmill: { name:'Sawmill', cost:{coins:40, wood:5},  desc:'Produces wood, 2 jobs',                                        category:'Production', unlockLevel:2 },
+  quarry:  { name:'Quarry',  cost:{coins:50},          desc:'Must be placed next to a mountain. Produces wood, 2 jobs',     category:'Production', unlockLevel:3 },
+  winery:  { name:'Winery',  cost:{coins:55, wood:10}, desc:'Must be placed next to a farm. Produces coins, +happiness, 2 jobs', category:'Production', unlockLevel:4 },
 };
 
 // ---- Apartment upgrade tiers: index 0 = level 1 (built at base cost above) ----
@@ -1295,6 +1299,7 @@ const ECO_RIVER_BONUS = 8;
 const ECO_PARK_BONUS = 3;
 const ECO_MOUNTAIN_PENALTY = 15;
 const MOUNTAIN_CLEAR_HAPPINESS_PENALTY = 6;
+const ECO_RIVER_CLEAR_PENALTY = 8;
 
 // ---- Store sub-types: pick after placing a store ----
 const STORE_TYPES = [
@@ -1316,9 +1321,13 @@ const SEASON_LENGTH = 40; // ticks per season
 
 const LEVEL_REQS = [
   null, // level 1 has no requirement (starting level)
-  { happiness:70, citizens:10, crops:50, jobs:8 },  // requirements to reach level 2
+  { happiness:70, citizens:10, crops:50, jobs:8 },   // requirements to reach level 2
   { happiness:80, citizens:20, crops:120, jobs:16 }, // requirements to reach level 3
   { happiness:85, citizens:35, crops:220, jobs:26 }, // requirements to reach level 4
+  { happiness:88, citizens:50, crops:320, jobs:38 }, // requirements to reach level 5
+  { happiness:90, citizens:70, crops:450, jobs:52 }, // requirements to reach level 6
+  { happiness:92, citizens:95, crops:600, jobs:68 }, // requirements to reach level 7
+  { happiness:95, citizens:125, crops:800, jobs:88 }, // requirements to reach level 8
 ];
 
 // ---- Auto-fetched building media (falls back to built-in pixel art / colors if missing) ----
@@ -1406,7 +1415,7 @@ function buildableIndices(){
 }
 function isAdjacentToTerrain(i, terrainType){
   const r = Math.floor(i/COLS), c = i%COLS;
-  const neighbors = [[-1,0],[1,0],[0,-1],[0,1]];
+  const neighbors = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
   for(const [dr,dc] of neighbors){
     const nr=r+dr, nc=c+dc;
     if(nr<0||nr>=ROWS||nc<0||nc>=COLS) continue;
@@ -1415,6 +1424,8 @@ function isAdjacentToTerrain(i, terrainType){
   }
   return false;
 }
+// Same adjacency check, aliased for readability when checking against a building type rather than terrain.
+const isAdjacentToBuildingType = isAdjacentToTerrain;
 function riverAdjacentFarmIndices(){
   const out = [];
   state.tiles.forEach((t,i)=>{
@@ -1865,6 +1876,9 @@ function jobsAvailable(){
     if(t && t.type==='fishery') jobs += 2;
     if(t && t.type==='mine') jobs += 2;
     if(t && t.type==='stadium') jobs += 4;
+    if(t && t.type==='sawmill') jobs += 2;
+    if(t && t.type==='quarry') jobs += 2;
+    if(t && t.type==='winery') jobs += 2;
   });
   return jobs;
 }
@@ -1969,10 +1983,11 @@ function mayorQuoteFor(happiness){
 }
 
 const BUILD_ICONS = {
-  road:'🛣️', bridge:'🌉', river:'💧', clearmountain:'⛏️', house:'🏠', apartment:'🏢',
+  road:'🛣️', bridge:'🌉', river:'💧', clearmountain:'⛏️', clearriver:'🪣', house:'🏠', apartment:'🏢',
   farm:'🌾', factory:'🏭', store:'🏪', park:'🌳', townhall:'🏛️',
   cinema:'🎬', restaurant:'🍽️', concerthall:'🎵',
-  stadium:'🏟️', clocktower:'🕰️', statue:'🗿', fishery:'🎣', mine:'⛏️'
+  stadium:'🏟️', clocktower:'🕰️', statue:'🗿', fishery:'🎣', mine:'⛏️',
+  sawmill:'🪚', quarry:'🪨', winery:'🍷'
 };
 
 const BUILD_CATEGORY_ORDER = ['Infrastructure','Residential','Production','Decoration','Entertainment','Landmark'];
@@ -2217,6 +2232,75 @@ function houseResidents(i){
     residents.push({ name: `${first} ${last}`, job: jobTitle, happiness: personalHappiness });
   }
   return { occupied, residents, capacity };
+}
+
+// ---- Employees working at a specific production/service building ----
+const JOB_SLOTS = { farm:1, factory:2, store:2, restaurant:2, cinema:2, concerthall:3, fishery:2, mine:2, stadium:4, sawmill:2, quarry:2, winery:2 };
+const JOB_TITLES = { farm:'Farmer', factory:'Factory Worker', store:'Shopkeeper', restaurant:'Server', cinema:'Usher', concerthall:'Stagehand', fishery:'Fisher', mine:'Miner', stadium:'Stadium Staff', sawmill:'Lumberjack', quarry:'Quarry Worker', winery:'Vintner' };
+// Order must mirror the accumulation order used in jobsAvailable().
+const JOB_ORDER = ['farm','factory','store','restaurant','cinema','concerthall','fishery','mine','stadium','sawmill','quarry','winery'];
+
+function buildingEmployees(i){
+  const t = state.tiles[i];
+  if(!t) return { filled:0, capacity:0, employees:[] };
+  const type = t.type;
+  if(type === 'concerthall' && t.role === 'secondary') return { filled:0, capacity:0, employees:[] };
+  const capacity = JOB_SLOTS[type] || 0;
+  if(capacity === 0) return { filled:0, capacity:0, employees:[] };
+
+  let before = 0;
+  let foundBefore = -1;
+  for(const jt of JOB_ORDER){
+    const indices = state.tiles
+      .map((tt,idx)=> (tt && tt.type===jt && !(jt==='concerthall' && tt.role==='secondary')) ? idx : -1)
+      .filter(idx=>idx!==-1);
+    for(const idx of indices){
+      if(idx === i){ foundBefore = before; break; }
+      before += JOB_SLOTS[jt] || 0;
+    }
+    if(foundBefore !== -1) break;
+  }
+  before = foundBefore !== -1 ? foundBefore : before;
+
+  const employed = Math.min(jobsAvailable(), state.population);
+  const filled = Math.max(0, Math.min(capacity, employed - before));
+
+  const employees = [];
+  for(let k=0;k<filled;k++){
+    const seed = i * 53 + k * 17 + 11;
+    const first = FIRST_NAMES[Math.floor(seededRand(seed) * FIRST_NAMES.length)];
+    const last = LAST_NAMES[Math.floor(seededRand(seed + 1) * LAST_NAMES.length)];
+    const variance = Math.floor((seededRand(seed + 2) - 0.5) * 20);
+    const happiness = Math.max(0, Math.min(100, Math.floor(state.happiness) + variance));
+    employees.push({ name:`${first} ${last}`, job: JOB_TITLES[type] || 'Worker', happiness });
+  }
+  return { filled, capacity, employees };
+}
+
+function employeesModalSection(i){
+  const { filled, capacity, employees } = buildingEmployees(i);
+  let html = `<div class="modal-section-label">Employees (${filled}/${capacity})</div>`;
+  if(employees.length === 0){
+    html += `<div class="modal-empty">No one is working here yet.</div>`;
+  } else {
+    html += employees.map((r, idx)=>{
+      const color = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+      const emoji = AVATAR_EMOJI[idx % AVATAR_EMOJI.length];
+      return `
+        <div class="resident-row">
+          <div class="resident-avatar" style="background:${color}">${emoji}</div>
+          <div class="resident-info">
+            <div class="resident-name">${r.name}</div>
+            <div class="resident-job">${r.job}</div>
+          </div>
+          <div class="resident-happy">
+            <div class="pct">${r.happiness}%</div>
+            <div class="bar"><div class="bar-fill" style="width:${r.happiness}%"></div></div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+  return html;
 }
 
 function productionRate(i, type){
@@ -2496,7 +2580,8 @@ function openFactoryModal(i){
     <div class="modal-stat-row"><span>Jobs</span><span class="val">+2 jobs</span></div>
     <div class="modal-stat-row"><span>Production rate</span><span class="val">${rate}%</span></div>
     <div class="modal-section-label">Products</div>
-    <div class="modal-products">${products}</div>`;
+    <div class="modal-products">${products}</div>
+    ${employeesModalSection(i)}`;
   openModal('🏭 Factory', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
 }
 
@@ -2518,17 +2603,27 @@ function openFarmModal(i){
 function openStoreModal(i){
   const t = state.tiles[i];
   if(!t || t.type !== 'store') return;
-  const current = t.storeType;
+  if(t.storeType){ openStoreDetailsModal(i); return; }
   const optionsHtml = STORE_TYPES.map(st=>{
-    const sel = current === st.key ? ' selected' : '';
-    return `<button class="store-type-btn${sel}" onclick="chooseStoreType(${i}, '${st.key}')">
+    return `<button class="store-type-btn" onclick="chooseStoreType(${i}, '${st.key}')">
       <span class="store-type-icon">${st.icon}</span>
       <span class="store-type-name">${st.name}</span>
     </button>`;
   }).join('');
   const body = `
-    <div class="modal-section-label">${current ? 'Change store type' : 'Choose a store type'}</div>
+    <div class="modal-section-label">Choose a store type</div>
     <div class="store-type-grid">${optionsHtml}</div>`;
+  openModal('🏪 Store', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
+}
+function openStoreDetailsModal(i){
+  const t = state.tiles[i];
+  if(!t || t.type !== 'store') return;
+  const st = STORE_TYPES.find(s=>s.key===t.storeType);
+  const body = `
+    <div class="modal-stat-row"><span>Type</span><span class="val">${st ? `${st.icon} ${st.name}` : 'Unknown'}</span></div>
+    <div class="modal-stat-row"><span>Jobs</span><span class="val">+2 jobs</span></div>
+    <div class="modal-stat-row"><span>Happiness</span><span class="val">+happiness</span></div>
+    ${employeesModalSection(i)}`;
   openModal('🏪 Store', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
 }
 function chooseStoreType(i, key){
@@ -2668,6 +2763,26 @@ function handleTileClick(i){
     return;
   }
 
+  // Clear River: fill in a river tile to reclaim buildable land — costs eco points.
+  if(selectedBuild === 'clearriver'){
+    if(!current || current.type !== 'river'){
+      log("Clear River can only target a river tile.");
+      return;
+    }
+    const b = BUILDINGS.clearriver;
+    for(const [res, amt] of Object.entries(b.cost)){
+      if(state[res] < amt){ log(`Not enough ${res} to clear the river.`); return; }
+    }
+    for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
+    state.tiles[i] = null;
+    state.ecoScore = (state.ecoScore || 0) - ECO_RIVER_CLEAR_PENALTY;
+    log(`Filled in a river tile into buildable land. -${ECO_RIVER_CLEAR_PENALTY} eco points.`);
+    playBulldozeSound(); playSfx('landscape');
+    renderGrid(); renderStats(); save();
+    showFloater(i, `-${ECO_RIVER_CLEAR_PENALTY} 🌿`, 'bad');
+    return;
+  }
+
   if(current && current.terrain){
     log("You can't build on rivers or mountains.");
     return;
@@ -2725,11 +2840,25 @@ function handleTileClick(i){
 
   if(selectedBuild === 'fishery' && !isAdjacentToTerrain(i, 'river')){
     log("A Fishery must be placed next to a river.");
+    showFloater(i, 'Needs river nearby', 'bad');
     return;
   }
 
   if(selectedBuild === 'mine' && !isAdjacentToTerrain(i, 'mountain')){
     log("A Mine must be placed next to a mountain.");
+    showFloater(i, 'Needs mountain nearby', 'bad');
+    return;
+  }
+
+  if(selectedBuild === 'quarry' && !isAdjacentToTerrain(i, 'mountain')){
+    log("A Quarry must be placed next to a mountain.");
+    showFloater(i, 'Needs mountain nearby', 'bad');
+    return;
+  }
+
+  if(selectedBuild === 'winery' && !isAdjacentToBuildingType(i, 'farm')){
+    log("A Winery must be placed next to a farm.");
+    showFloater(i, 'Needs farm nearby', 'bad');
     return;
   }
 
@@ -2792,6 +2921,9 @@ function gameTick(){
   const stadiums = countType('stadium');
   const clockTowers = countType('clocktower');
   const statues = countType('statue');
+  const sawmills = countType('sawmill');
+  const quarries = countType('quarry');
+  const wineries = countType('winery');
   const employed = Math.min(jobs, state.population);
   const unemployed = Math.max(0, state.population - jobs);
 
@@ -2803,11 +2935,12 @@ function gameTick(){
 
   const factoryWorkers = Math.min(employed, factories*2);
   const mineWorkers = Math.min(employed, mines*2);
-  const coinsProduced = factoryWorkers * 2 + mineWorkers * 2;
-  const upkeep = countType('house') * 0.5 + factories * 0.5 + mines * 0.5;
+  const wineryWorkers = Math.min(employed, wineries*2);
+  const coinsProduced = factoryWorkers * 2 + mineWorkers * 2 + wineryWorkers * 2;
+  const upkeep = countType('house') * 0.5 + factories * 0.5 + mines * 0.5 + wineries * 0.5;
   state.coins += coinsProduced - upkeep;
   if(state.coins < 0) state.coins = 0;
-  state.wood += 0.5;
+  state.wood += 0.5 + sawmills * 2 + quarries * 1.5;
 
   let happinessDelta = 0;
   happinessDelta += parks * 1.5;
@@ -2819,6 +2952,7 @@ function gameTick(){
   happinessDelta += stadiums * 3; // major landmark, big happiness boost
   happinessDelta += clockTowers * 1.2; // town-wide happiness aura
   happinessDelta += statues * 0.4; // cheap decoration, small happiness
+  happinessDelta += wineries * 1; // fine wine keeps everyone cheerful
   happinessDelta -= unemployed * 2;
   happinessDelta -= starving ? 8 : 0;
   happinessDelta += (state.food > state.population * 5) ? 1 : 0;
