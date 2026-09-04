@@ -770,6 +770,16 @@
   }
   .resident-happy .bar-fill{ height:100%; background:linear-gradient(90deg, #7fc0f7, #2f6fe0); }
   .modal-empty{ color:var(--muted); font-size:12px; text-align:center; padding:8px 0; }
+  #modalBox.townhall-wide{ width:680px; }
+  .townhall-columns{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .department-card{
+    background:#fff; border-radius:10px; padding:10px 12px; margin-bottom:8px;
+    box-shadow:inset 0 -1px 0 rgba(0,0,0,.05), 0 2px 3px rgba(0,0,0,.08);
+  }
+  .department-name{ font-weight:800; color:var(--text); margin-bottom:4px; }
+  .department-detail{ color:var(--muted); font-size:11px; line-height:1.45; }
+  .department-status{ color:var(--accent2); font-weight:800; margin-top:5px; font-size:11px; }
+  @media (max-width:620px){ .townhall-columns{ grid-template-columns:1fr; } }
   .modal-products{
     display:flex; flex-wrap:wrap; gap:6px; padding:6px 0 2px;
   }
@@ -1463,12 +1473,36 @@ function triggerFireAt(i, targetTile){
     if(cur === targetTile){
       if(cur.type === 'house') state.housingCap = Math.max(0, state.housingCap - 4);
       if(cur.type === 'apartment') state.housingCap = Math.max(0, state.housingCap - housingCapOf(cur));
-      state.tiles[i] = null;
+      destroyLotByEvent(i, 'Fire');
       state.happiness = Math.max(0, state.happiness - 10);
       log(`The fire burned itself out, leaving nothing behind.`);
       renderGrid(); renderStats(); save();
     }
   }, FIRE_BURN_MS);
+}
+
+function destroyedBuildingName(tile){
+  if(!tile) return 'Lot';
+  const building = BUILDINGS[tile.type];
+  return building ? building.name : tile.type.charAt(0).toUpperCase() + tile.type.slice(1);
+}
+
+function destroyLotByEvent(i, eventName){
+  const tile = state.tiles[i];
+  if(!tile) return;
+  const name = destroyedBuildingName(tile);
+  state.destructionHistory[i] = `${name} was destroyed by ${eventName}.`;
+  state.tiles[i] = null;
+  if(tile.type === 'road' && maintenanceStaffed()){
+    log(`Town Maintenance is heading to the destroyed road. Arrival in 10 seconds.`);
+    setTimeout(()=>{
+      if(!state.tiles[i]){
+        state.tiles[i] = { type:'road' };
+        log(`Town Maintenance restored the road.`);
+        renderGrid(); renderStats(); save();
+      }
+    }, 10000);
+  }
 }
 
 function animateTruck(path){
@@ -1602,7 +1636,18 @@ const LEVEL_REQS = [
   { happiness:90, citizens:70, crops:450, jobs:52 }, // requirements to reach level 6
   { happiness:92, citizens:95, crops:600, jobs:68 }, // requirements to reach level 7
   { happiness:95, citizens:125, crops:800, jobs:88 }, // requirements to reach level 8
+  { happiness:96, citizens:155, crops:1050, jobs:110 }, // requirements to reach level 9
+  { happiness:98, citizens:190, crops:1350, jobs:135 }, // requirements to reach level 10
 ];
+
+const TOWN_HALL_MAX_LEVEL = 10;
+const TOWN_YEAR_TICKS = SEASON_LENGTH * SEASON_NAMES.length;
+const MAYORS_OFFICE_EMPLOYEES = 4;
+const MAINTENANCE_EMPLOYEES = 5;
+const FESTIVAL_COST = 2000;
+function departmentsUnlocked(){ return state.townHallLevel > 5; }
+function mayorsOfficeStaffed(){ return departmentsUnlocked() && state.population >= MAYORS_OFFICE_EMPLOYEES; }
+function maintenanceStaffed(){ return departmentsUnlocked() && state.population >= MAINTENANCE_EMPLOYEES; }
 
 // ---- Auto-fetched building media (falls back to built-in pixel art / colors if missing) ----
 const RES_BASE = 'https://raw.githubusercontent.com/phuongm1409/townverse/main/res/';
@@ -1748,7 +1793,7 @@ const EVENTS = [
       const farms = riverAdjacentFarmIndices();
       if(farms.length > 0){
         const i = farms[Math.floor(Math.random()*farms.length)];
-        state.tiles[i] = null;
+        destroyLotByEvent(i, 'Flood');
         state.food = Math.max(0, state.food - 15);
         return { index:i, msg:`The river burst its banks and swept away a riverside farm!`, floater:'-15 🌾', floaterCls:'bad' };
       }
@@ -1904,6 +1949,7 @@ let state = {
   nextQuestId: 1,
   mayorName: 'Mayor',
   townHallLevel: 1,
+  destructionHistory: {},
   tick: 0,
   season: 0
 };
@@ -2123,6 +2169,7 @@ function load(){
       if(!state.quests) state.quests = [];
       if(!state.nextQuestId) state.nextQuestId = 1;
       if(!state.mayorName) state.mayorName = 'Mayor';
+      if(!state.destructionHistory || Array.isArray(state.destructionHistory)) state.destructionHistory = {};
       if(state.ecoScore == null) state.ecoScore = 0;
       if(state.season == null) state.season = Math.floor((state.tick||0) / SEASON_LENGTH) % SEASON_NAMES.length;
       const wanted = ROWS*COLS;
@@ -2162,6 +2209,7 @@ function jobsAvailable(){
     if(t && t.type==='quarry') jobs += 2;
     if(t && t.type==='winery') jobs += 2;
   });
+  if(departmentsUnlocked()) jobs += MAYORS_OFFICE_EMPLOYEES + MAINTENANCE_EMPLOYEES;
   return jobs;
 }
 function countType(type){ return state.tiles.filter(t=>t && t.type===type).length; }
@@ -2635,20 +2683,21 @@ function productionRate(i, type){
 }
 
 function tileInfo(t, i){
-  if(!t) return { name:'Empty Land' };
+  const latestDestruction = state.destructionHistory && state.destructionHistory[i];
+  if(!t) return { name:'Empty Land', facts:latestDestruction ? [latestDestruction] : undefined };
   if(t.type === 'river') return { name:'River', facts:['Flowing water. Riverside farms may occasionally flood.'] };
   if(t.type === 'mountain') return { name:'Mountain', facts:['Rocky terrain — not buildable.'] };
 
   if(t.type === 'townhall'){
     const nextLevel = state.townHallLevel + 1;
     const reqs = LEVEL_REQS[nextLevel];
-    if(!reqs) return { name:`Town Hall`, sub:`Level ${state.townHallLevel}`, facts:['Max level reached!'] };
+    if(!reqs) return { name:`Town Hall`, sub:`Level ${state.townHallLevel}`, facts:['Max level reached!', ...(latestDestruction ? [latestDestruction] : [])] };
     const stats = currentTownStats();
     const reqLines = Object.entries(reqs).map(([key, need])=>{
       const have = stats[key] ?? 0;
       return { met: have >= need, text: `${LEVEL_REQ_LABELS[key](need)}`, progress:`${have}/${need}` };
     });
-    return { name:'Town Hall', sub:`Level ${state.townHallLevel}`, section:'Next upgrade', reqs:reqLines };
+    return { name:'Town Hall', sub:`Level ${state.townHallLevel}`, section:'Next upgrade', reqs:reqLines, facts:latestDestruction ? [latestDestruction] : undefined };
   }
 
   if(t.type === 'house'){
@@ -2707,7 +2756,9 @@ function tileInfo(t, i){
   }
 
   const b = BUILDINGS[t.type];
-  return b ? { name:b.name, facts:[b.desc] } : { name:'Unknown' };
+  const info = b ? { name:b.name, facts:[b.desc] } : { name:'Unknown', facts:[] };
+  if(latestDestruction) info.facts.push(latestDestruction);
+  return info;
 }
 
 function showTooltip(x, y, info){
@@ -2748,7 +2799,13 @@ gridEl.addEventListener('mousemove', e=>{
   const tile = e.target.closest('.tile');
   if(!tile){ hideTooltip(); return; }
   const i = +tile.dataset.i;
-  showTooltip(e.clientX, e.clientY, tileInfo(state.tiles[i], i));
+  const info = tileInfo(state.tiles[i], i);
+  const latestDestruction = state.destructionHistory && state.destructionHistory[i];
+  if(latestDestruction){
+    if(!info.facts) info.facts = [];
+    if(!info.facts.includes(latestDestruction)) info.facts.push(latestDestruction);
+  }
+  showTooltip(e.clientX, e.clientY, info);
 });
 gridEl.addEventListener('mouseleave', hideTooltip);
 
@@ -2769,6 +2826,7 @@ const LEVEL_REQ_LABELS = {
 };
 
 function upgradeTownHall(){
+  if(state.townHallLevel >= TOWN_HALL_MAX_LEVEL) return;
   state.townHallLevel++;
   log(`Town Hall upgraded to level ${state.townHallLevel}!`);
   closeBuildingModal();
@@ -2778,10 +2836,11 @@ function upgradeTownHall(){
   celebrateLevelUp();
 }
 
-function openModal(title, bodyHtml, footerHtml){
+function openModal(title, bodyHtml, footerHtml, wide = false){
   document.getElementById('modalTitle').textContent = title;
   document.getElementById('modalBody').innerHTML = bodyHtml;
   document.getElementById('modalFooter').innerHTML = footerHtml;
+  document.getElementById('modalBox').classList.toggle('townhall-wide', wide);
   document.getElementById('modalOverlay').classList.add('show');
 }
 function closeBuildingModal(){
@@ -2990,23 +3049,36 @@ function openConcertHallModal(i){
 function openTownHallModal(i){
   const nextLevel = state.townHallLevel + 1;
   const reqs = LEVEL_REQS[nextLevel];
-  if(!reqs){
-    openModal('🏛️ Town Hall — Level ' + state.townHallLevel,
-      `<div class="modal-empty">Max level reached!</div>`,
-      `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
-    return;
-  }
   const stats = currentTownStats();
-  const entries = Object.entries(reqs);
+  const entries = reqs ? Object.entries(reqs) : [];
   const rows = entries.map(([key, need])=>{
     const have = stats[key] ?? 0;
     const ok = have >= need;
     return `<div class="modal-stat-row"><span>${ok?'✅':'⬜'} ${LEVEL_REQ_LABELS[key](need)}</span><span class="val">${have}/${need}</span></div>`;
   }).join('');
-  const allMet = entries.every(([key, need])=> (stats[key] ?? 0) >= need);
-  openModal(`🏛️ Upgrade to Level ${nextLevel}`, rows,
-    `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Cancel</button>
-     <button class="modal-btn-primary" ${allMet ? '' : 'disabled'} onclick="upgradeTownHall()">Upgrade</button>`);
+  const allMet = !!reqs && entries.every(([key, need])=> (stats[key] ?? 0) >= need);
+  const requirementsHtml = reqs ? rows : `<div class="modal-empty">Max level ${TOWN_HALL_MAX_LEVEL} reached!</div>`;
+  const departmentsHtml = `
+    <div class="modal-section-label">Departments</div>
+    <div class="department-card">
+      <div class="department-name">Mayor's Office</div>
+      <div class="department-detail">Needs ${MAYORS_OFFICE_EMPLOYEES} employees. Holds one Town Festival each year at the Stadium for ${FESTIVAL_COST} coins.</div>
+      <div class="department-status">${mayorsOfficeStaffed() ? '✅ Staffed' : '⬜ Needs employees'}</div>
+    </div>
+    <div class="department-card">
+      <div class="department-name">Town Maintenance</div>
+      <div class="department-detail">Needs ${MAINTENANCE_EMPLOYEES} employees. Restores roads destroyed by events after a 10-second arrival and repair time.</div>
+      <div class="department-status">${maintenanceStaffed() ? '✅ Staffed' : '⬜ Needs employees'}</div>
+    </div>`;
+  const body = state.townHallLevel > 5
+    ? `<div class="townhall-columns"><div><div class="modal-section-label">${reqs ? 'Requirements for Level '+nextLevel : 'Upgrade'}</div>${requirementsHtml}</div><div>${departmentsHtml}</div></div>`
+    : requirementsHtml;
+  const footer = reqs
+    ? `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Cancel</button>
+       <button class="modal-btn-primary" ${allMet ? '' : 'disabled'} onclick="upgradeTownHall()">Upgrade</button>`
+    : `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`;
+  openModal(reqs ? `🏛️ Upgrade to Level ${nextLevel}` : `🏛️ Town Hall — Level ${state.townHallLevel}`,
+    body, footer, state.townHallLevel > 5);
 }
 
 function handleTileClick(i){
@@ -3234,6 +3306,20 @@ function handleTileClick(i){
 
 function gameTick(){
   state.tick++;
+  if(state.tick % TOWN_YEAR_TICKS === 0 && mayorsOfficeStaffed()){
+    const stadium = randomIndexOfType('stadium');
+    if(stadium != null && state.coins >= FESTIVAL_COST){
+      state.coins -= FESTIVAL_COST;
+      state.happiness = Math.min(100, state.happiness + 15);
+      log(`🎉 The Mayor's Office held the annual Town Festival at the Stadium. -${FESTIVAL_COST} coins, +15 happiness.`);
+      showEventBubble(stadium, 'good', '🎉', 'Annual Town Festival', `The Mayor's Office hosted the festival at the Stadium for ${FESTIVAL_COST} coins.`);
+      showFloater(stadium, '+15 😊', 'good');
+    } else if(stadium == null){
+      log(`The annual Town Festival could not be held because the town has no Stadium.`);
+    } else {
+      log(`The annual Town Festival could not be held because ${FESTIVAL_COST} coins are required.`);
+    }
+  }
 
   // ---- Concert Hall: fixed show cycle (announce 5 ticks ahead, live for 50 ticks, repeats every 100 ticks) ----
   const concertCyclePos = state.tick % CONCERT_INTERVAL;
