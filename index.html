@@ -479,20 +479,23 @@
   }
   #concertAnnounceLayer{ position:absolute; top:0; left:0; pointer-events:none; z-index:19; overflow:visible; }
   .concert-announce-chip{
-    position:absolute; transform:translateY(-100%);
-    display:flex; align-items:center; justify-content:center; gap:4px;
-    background:#ffffff; border-radius:8px; padding:3px 7px;
+    position:absolute; transform:translate(-50%, -100%);
+    display:inline-flex; align-items:center; justify-content:center; gap:4px;
+    background:#ffffff; border-radius:8px; padding:3px 8px;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(0,0,0,.06), 0 2px 4px rgba(0,0,0,.2);
-    white-space:nowrap;
+    white-space:nowrap; width:max-content; max-width:170px;
     animation: concertChipPulse 1.3s ease-in-out infinite;
   }
-  .concert-announce-icon{ font-size:10px; line-height:1; }
+  .concert-announce-chip.live{ background:#fff0f0; }
+  .concert-announce-icon{ font-size:10px; line-height:1; flex-shrink:0; }
   .concert-announce-name{
     font-family:var(--font-heading); font-size:8px; font-weight:700; color:var(--concerthall);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
+  .concert-announce-chip.live .concert-announce-name{ color:var(--bad); }
   @keyframes concertChipPulse{
-    0%,100%{ transform:translateY(-100%) scale(1); }
-    50%{ transform:translateY(calc(-100% - 3px)) scale(1.04); }
+    0%,100%{ transform:translate(-50%, -100%) scale(1); }
+    50%{ transform:translate(-50%, calc(-100% - 3px)) scale(1.04); }
   }
   .tile:hover{ filter:brightness(1.12); }
 
@@ -1520,7 +1523,7 @@ const BUILDINGS = {
   park:     { name:'Park',      cost:{coins:15},           desc:'+happiness nearby, +eco points',       category:'Residential',    unlockLevel:1 },
   cinema:      { name:'Movie Theater', cost:{coins:60, wood:10},  desc:'+10% happiness in the adjacent area, visitors +5% happiness per visit, 2 jobs', category:'Entertainment', unlockLevel:2 },
   restaurant:  { name:'Restaurant',    cost:{coins:45, wood:5},   desc:'Serves a random cuisine, 2 jobs, +happiness',        category:'Entertainment', unlockLevel:2 },
-  concerthall: { name:'Concert Hall',  cost:{coins:120, wood:20}, desc:'Needs 2 tiles side by side. Hosts a concert every season, +20% happiness per visit', category:'Entertainment', unlockLevel:3, width:2 },
+  concerthall: { name:'Concert Hall',  cost:{coins:120, wood:20}, desc:'Needs 2 tiles side by side. Hosts a show every 100 ticks that runs for 50 ticks, +20% happiness per show', category:'Entertainment', unlockLevel:3, width:2 },
   townhall: { name:'Town Hall', cost:{coins:80, wood:15},  desc:'Landmark building, boosts town happiness (only 1 per map)', category:'Landmark', unlockLevel:1 },
   stadium:    { name:'Stadium',     cost:{coins:200, wood:40}, desc:'Major landmark. Big +happiness boost and 4 jobs',            category:'Landmark', unlockLevel:5 },
   clocktower: { name:'Clock Tower', cost:{coins:70, wood:15},  desc:'+happiness aura for the whole town and speeds up citizen requests', category:'Landmark', unlockLevel:2 },
@@ -1570,17 +1573,22 @@ const STORE_TYPES = [
 const RESTAURANT_CUISINES = ['ramen', 'pasta', 'common'];
 const RESTAURANT_CUISINE_NAMES = { ramen:'Ramen', pasta:'Pasta', common:'Home-style' };
 
-// ---- Seasons (drive the Concert Hall's once-per-season show) ----
+// ---- Seasons ----
 const SEASON_NAMES = ['🌱 Spring','☀️ Summer','🍂 Autumn','❄️ Winter'];
 const SEASON_LENGTH = 40; // ticks per season
-const CONCERT_ANNOUNCE_TICKS = 5; // show the "coming soon" chip this many ticks before the show
+
+// ---- Concert Hall show schedule: runs on its own fixed cycle, independent of the season ----
+const CONCERT_INTERVAL = 100; // ticks between the start of one show and the next
+const CONCERT_DURATION = 50;  // ticks a show stays "live"
+const CONCERT_ANNOUNCE_TICKS = 5; // show the "coming soon" chip this many ticks before it starts
 const CONCERT_SHOWS = [
   'THREE MAN DOWN concert',
   'BUS concert',
   'Kim Ji Won fanmeeting',
   'PUN COMEBACK SHOW',
   'ONG SEONGWU concert',
-  'ONG SEONGWU fanmeeting'
+  'ONG SEONGWU fanmeeting',
+  'PERSES concert'
 ];
 
 const LEVEL_REQS = [
@@ -2419,21 +2427,23 @@ function renderGrid(){
   renderConcertAnnouncements();
 }
 
-// ---- Concert Hall: floating "coming soon" chip above the hall ----
+// ---- Concert Hall: floating "coming soon" / "live now" chip above the hall ----
 function renderConcertAnnouncements(){
   const layer = document.getElementById('concertAnnounceLayer');
   if(!layer) return;
   layer.innerHTML = '';
   mainIndicesOfType('concerthall').forEach(i=>{
     const t = state.tiles[i];
-    if(!t || !t._upcomingShow) return;
+    if(!t) return;
+    const showName = t._liveShow || t._upcomingShow;
+    if(!showName) return;
     const r = Math.floor(i/COLS), c = i % COLS;
     const chip = document.createElement('div');
-    chip.className = 'concert-announce-chip';
-    chip.style.left = (c*TILE_W) + 'px';
+    chip.className = 'concert-announce-chip' + (t._liveShow ? ' live' : '');
+    chip.style.left = (c*TILE_W + TILE_W) + 'px'; // centered over the 2-tile hall
     chip.style.top = (r*TILE_H - 4) + 'px';
-    chip.style.width = (TILE_W*2) + 'px';
-    chip.innerHTML = `<span class="concert-announce-icon">🎤</span><span class="concert-announce-name">${t._upcomingShow}</span>`;
+    const icon = t._liveShow ? '🔴' : '🎤';
+    chip.innerHTML = `<span class="concert-announce-icon">${icon}</span><span class="concert-announce-name">${showName}</span>`;
     layer.appendChild(chip);
   });
 }
@@ -2687,8 +2697,11 @@ function tileInfo(t, i){
   }
 
   if(t.type === 'concerthall'){
-    const ticksLeft = SEASON_LENGTH - (state.tick % SEASON_LENGTH);
-    return { name:'Concert Hall', facts:[`Next concert in ${ticksLeft} ticks`, '+20% happiness per visit', '2 tiles · 3 jobs'] };
+    const cyclePos = state.tick % CONCERT_INTERVAL;
+    const status = cyclePos < CONCERT_DURATION
+      ? `Live now (ends in ${CONCERT_DURATION - cyclePos} ticks)`
+      : `Next concert in ${CONCERT_INTERVAL - cyclePos} ticks`;
+    return { name:'Concert Hall', facts:[status, '+20% happiness per show', '2 tiles · 3 jobs'] };
   }
 
   const b = BUILDINGS[t.type];
@@ -2957,11 +2970,16 @@ function openRestaurantModal(i){
 }
 
 function openConcertHallModal(i){
-  const ticksLeft = SEASON_LENGTH - (state.tick % SEASON_LENGTH);
+  const cyclePos = state.tick % CONCERT_INTERVAL;
+  const t = state.tiles[i];
+  const statusRow = cyclePos < CONCERT_DURATION
+    ? `<div class="modal-stat-row"><span>Now playing</span><span class="val">${t && t._liveShow ? t._liveShow : 'Live show'}</span></div>
+       <div class="modal-stat-row"><span>Ends in</span><span class="val">${CONCERT_DURATION - cyclePos} ticks</span></div>`
+    : `<div class="modal-stat-row"><span>Next show</span><span class="val">in ${CONCERT_INTERVAL - cyclePos} ticks</span></div>`;
   const body = `
     <div class="modal-stat-row"><span>Current season</span><span class="val">${SEASON_NAMES[state.season || 0]}</span></div>
-    <div class="modal-stat-row"><span>Next concert</span><span class="val">in ${ticksLeft} ticks</span></div>
-    <div class="modal-stat-row"><span>Per visit</span><span class="val">+20% 😊</span></div>
+    ${statusRow}
+    <div class="modal-stat-row"><span>Per show</span><span class="val">+20% 😊</span></div>
     <div class="modal-stat-row"><span>Jobs</span><span class="val">+3 jobs</span></div>
     <div class="modal-stat-row"><span>Footprint</span><span class="val">2 tiles</span></div>`;
   openModal('🎵 Concert Hall', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
@@ -3126,7 +3144,7 @@ function handleTileClick(i){
     for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
     state.tiles[i] = { type:'concerthall', pair:j };
     state.tiles[j] = { type:'concerthall', pair:i, role:'secondary' };
-    log('Built a concert hall! It will host a concert once every season.');
+    log('Built a concert hall! It will host a show every 100 ticks, running for 50 ticks each time.');
     playBuildSound('concerthall');
     renderGrid(); renderStats(); save();
     popTile(i); popTile(j);
@@ -3196,18 +3214,34 @@ function handleTileClick(i){
 function gameTick(){
   state.tick++;
 
-  // ---- Concert Hall: announce the upcoming show a few ticks ahead of time ----
-  const ticksUntilConcert = SEASON_LENGTH - (state.tick % SEASON_LENGTH);
-  if(ticksUntilConcert === CONCERT_ANNOUNCE_TICKS){
+  // ---- Concert Hall: fixed show cycle (announce 5 ticks ahead, live for 50 ticks, repeats every 100 ticks) ----
+  const concertCyclePos = state.tick % CONCERT_INTERVAL;
+  if(concertCyclePos === CONCERT_INTERVAL - CONCERT_ANNOUNCE_TICKS){
     mainIndicesOfType('concerthall').forEach(i=>{
       const t = state.tiles[i];
       if(!t) return;
       t._upcomingShow = CONCERT_SHOWS[Math.floor(Math.random()*CONCERT_SHOWS.length)];
       log(`🎫 "${t._upcomingShow}" is coming to the Concert Hall in ${CONCERT_ANNOUNCE_TICKS} ticks!`);
     });
+  } else if(concertCyclePos === 0){
+    mainIndicesOfType('concerthall').forEach(i=>{
+      const t = state.tiles[i];
+      if(!t) return;
+      const showName = t._upcomingShow || CONCERT_SHOWS[Math.floor(Math.random()*CONCERT_SHOWS.length)];
+      t._liveShow = showName;
+      delete t._upcomingShow;
+      state.happiness = Math.min(100, state.happiness + 20);
+      showFloater(i, '+20% 😊', 'good');
+      log(`🎶 "${showName}" lit up the Concert Hall! The whole town is buzzing.`);
+    });
+  } else if(concertCyclePos === CONCERT_DURATION){
+    mainIndicesOfType('concerthall').forEach(i=>{
+      const t = state.tiles[i];
+      if(t) delete t._liveShow;
+    });
   }
 
-  // ---- Seasons: a new season triggers every Concert Hall's show ----
+  // ---- Seasons: cosmetic season name + winter weather, independent of the concert schedule ----
   const newSeason = Math.floor(state.tick / SEASON_LENGTH) % SEASON_NAMES.length;
   if(state.season == null) state.season = newSeason;
   if(newSeason !== state.season){
@@ -3217,14 +3251,6 @@ function gameTick(){
       state.winterStormUntil = null;
       hideWinterStormOverlay();
     }
-    mainIndicesOfType('concerthall').forEach(i=>{
-      const t = state.tiles[i];
-      const showName = (t && t._upcomingShow) ? t._upcomingShow : null;
-      if(t) delete t._upcomingShow;
-      state.happiness = Math.min(100, state.happiness + 20);
-      showFloater(i, '+20% 😊', 'good');
-      log(showName ? `🎶 "${showName}" lit up the Concert Hall! The whole town is buzzing.` : '🎶 A concert lit up the Concert Hall! The whole town is buzzing.');
-    });
   }
 
   checkWinterStormExpiry();
