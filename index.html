@@ -906,13 +906,27 @@ Object.entries(SFX_FILES).forEach(([key, path])=>{
     sfxAudio[key] = a;
   }catch(e){}
 });
+// Priority order, highest first. While a higher-priority sound is still
+// playing, lower-priority sounds are skipped so audio never overlaps.
+const SFX_PRIORITY = ['fulfill', 'bubble', 'fire', 'event', 'coin', 'click'];
+const sfxActiveCount = {};
 function playSfx(key){
   const base = sfxAudio[key];
   if(!base) return;
+  const myRank = SFX_PRIORITY.indexOf(key);
+  if(myRank > 0){
+    for(let i=0; i<myRank; i++){
+      if(sfxActiveCount[SFX_PRIORITY[i]] > 0) return; // a higher-priority sfx is playing
+    }
+  }
   try{
-    const inst = base.cloneNode(true); // clone so overlapping plays don't cut each other off
+    const inst = base.cloneNode(true); // clone so overlapping plays of the SAME sound don't cut each other off
     inst.volume = base.volume;
-    inst.play().catch(()=>{});
+    sfxActiveCount[key] = (sfxActiveCount[key] || 0) + 1;
+    const release = ()=>{ sfxActiveCount[key] = Math.max(0, (sfxActiveCount[key] || 1) - 1); };
+    inst.addEventListener('ended', release);
+    inst.addEventListener('pause', release);
+    inst.play().catch(release);
   }catch(e){}
 }
 
