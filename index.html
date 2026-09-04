@@ -1513,6 +1513,7 @@ const BUILDINGS = {
   road:     { name:'Road',      cost:{coins:5},            desc:'Connects town',                       category:'Infrastructure', unlockLevel:1 },
   bridge:   { name:'Bridge',    cost:{coins:25, wood:10},  desc:'Crosses a river, connects roads',      category:'Infrastructure', unlockLevel:1 },
   river:    { name:'River',     cost:{coins:20, wood:5},   desc:'Carve a new river on empty land. +eco points, adds scenic water (needs a bridge to cross)', category:'Infrastructure', unlockLevel:1 },
+  mountain: { name:'Build Mountain', cost:{coins:60, wood:10}, desc:'Raise a new mountain on empty land. +eco points, unlocks nearby mines & quarries (not buildable on directly)', category:'Infrastructure', unlockLevel:1 },
   clearmountain: { name:'Clear Mountain', cost:{coins:40}, desc:'Clear a mountain into buildable land. Costs eco points and happiness — think before you dig!', category:'Infrastructure', unlockLevel:1 },
   clearriver: { name:'Clear River', cost:{coins:20}, desc:'Fill in a river tile into buildable land. Costs eco points — think before you dig!', category:'Infrastructure', unlockLevel:1 },
   house:    { name:'House',     cost:{coins:20, wood:5},   desc:'+4 pop capacity',                      category:'Residential',    unlockLevel:1 },
@@ -1555,6 +1556,7 @@ function housingCapOf(t){
 // ---- Eco score: rewards greening the town, penalizes clearing nature ----
 const ECO_RIVER_BONUS = 8;
 const ECO_PARK_BONUS = 3;
+const ECO_MOUNTAIN_BUILD_BONUS = 6;
 const ECO_MOUNTAIN_PENALTY = 15;
 const MOUNTAIN_CLEAR_HAPPINESS_PENALTY = 6;
 const ECO_RIVER_CLEAR_PENALTY = 8;
@@ -2263,7 +2265,7 @@ function mayorQuoteFor(happiness){
 }
 
 const BUILD_ICONS = {
-  road:'🛣️', bridge:'🌉', river:'💧', clearmountain:'⛏️', clearriver:'🪣', house:'🏠', apartment:'🏢',
+  road:'🛣️', bridge:'🌉', river:'💧', mountain:'⛰️', clearmountain:'⛏️', clearriver:'🪣', house:'🏠', apartment:'🏢',
   farm:'🌾', factory:'🏭', store:'🏪', park:'🌳', townhall:'🏛️',
   cinema:'🎬', restaurant:'🍽️', concerthall:'🎵',
   stadium:'🏟️', clocktower:'🕰️', statue:'🗿', fishery:'🎣', mine:'⛏️',
@@ -3058,6 +3060,25 @@ function handleTileClick(i){
     playBuildSound('river'); playSfx('landscape');
     renderGrid(); renderStats(); save();
     showFloater(i, `+${ECO_RIVER_BONUS} 🌿`, 'good');
+    popTile(i);
+    return;
+  }
+
+  // Mountain: raise a new mountain on empty, buildable land.
+  if(selectedBuild === 'mountain'){
+    if(current){ log("A mountain needs clear, empty land."); return; }
+    const b = BUILDINGS.mountain;
+    for(const [res, amt] of Object.entries(b.cost)){
+      if(state[res] < amt){ log(`Not enough ${res} to raise a mountain.`); return; }
+    }
+    for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
+    const peak = 28 + Math.floor(Math.random()*30);
+    state.tiles[i] = { type:'mountain', terrain:true, peak, snow: peak > 46 };
+    state.ecoScore = (state.ecoScore || 0) + ECO_MOUNTAIN_BUILD_BONUS;
+    log(`Raised a new mountain. +${ECO_MOUNTAIN_BUILD_BONUS} eco points.`);
+    playBuildSound('mountain'); playSfx('landscape');
+    renderGrid(); renderStats(); save();
+    showFloater(i, `+${ECO_MOUNTAIN_BUILD_BONUS} 🌿`, 'good');
     popTile(i);
     return;
   }
