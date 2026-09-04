@@ -1634,7 +1634,7 @@ const TOWN_YEAR_TICKS = SEASON_LENGTH * SEASON_NAMES.length;
 const MAYORS_OFFICE_EMPLOYEES = 4;
 const MAINTENANCE_EMPLOYEES = 5;
 const FESTIVAL_COST = 2000;
-function departmentsUnlocked(){ return state.townHallLevel > 5; }
+function departmentsUnlocked(){ return state.townHallLevel >= 5; }
 function mayorsOfficeStaffed(){ return departmentsUnlocked() && state.population >= MAYORS_OFFICE_EMPLOYEES; }
 function maintenanceStaffed(){ return departmentsUnlocked() && state.population >= MAINTENANCE_EMPLOYEES; }
 
@@ -3060,7 +3060,7 @@ function openTownHallModal(i){
       <div class="department-detail">Needs ${MAINTENANCE_EMPLOYEES} employees. Restores roads destroyed by events after a 10-second arrival and repair time.</div>
       <div class="department-status">${maintenanceStaffed() ? '✅ Staffed' : '⬜ Needs employees'}</div>
     </div>`;
-  const body = state.townHallLevel > 5
+  const body = departmentsUnlocked()
     ? `<div class="townhall-columns"><div><div class="modal-section-label">${reqs ? 'Requirements for Level '+nextLevel : 'Upgrade'}</div>${requirementsHtml}</div><div>${departmentsHtml}</div></div>`
     : requirementsHtml;
   const footer = reqs
@@ -3068,7 +3068,7 @@ function openTownHallModal(i){
        <button class="modal-btn-primary" ${allMet ? '' : 'disabled'} onclick="upgradeTownHall()">Upgrade</button>`
     : `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`;
   openModal(reqs ? `🏛️ Upgrade to Level ${nextLevel}` : `🏛️ Town Hall — Level ${state.townHallLevel}`,
-    body, footer, state.townHallLevel > 5);
+    body, footer, departmentsUnlocked());
 }
 
 function handleTileClick(i){
