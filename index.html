@@ -47,7 +47,7 @@
     background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%3E%3Ctext%20x%3D'10'%20y%3D'34'%20font-size%3D'18'%20fill%3D'rgba(245%2C190%2C35%2C.42)'%3E%E2%98%85%3C%2Ftext%3E%3Ctext%20x%3D'110'%20y%3D'60'%20font-size%3D'22'%20fill%3D'rgba(255%2C205%2C45%2C.42)'%3E%E2%98%85%3C%2Ftext%3E%3Ctext%20x%3D'40'%20y%3D'120'%20font-size%3D'15'%20fill%3D'rgba(235%2C170%2C20%2C.42)'%3E%E2%98%85%3C%2Ftext%3E%3Ctext%20x%3D'130'%20y%3D'140'%20font-size%3D'12'%20fill%3D'rgba(255%2C205%2C45%2C.42)'%3E%E2%98%85%3C%2Ftext%3E%3C%2Fsvg%3E");
   }
   body[data-season="2"]{
-    background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%3E%3Ctext%20x%3D'10'%20y%3D'34'%20font-size%3D'18'%3E%F0%9F%8D%82%3C%2Ftext%3E%3Ctext%20x%3D'106'%20y%3D'68'%20font-size%3D'20'%3E%F0%9F%8D%81%3C%2Ftext%3E%3Ctext%20x%3D'38'%20y%3D'126'%20font-size%3D'16'%3E%F0%9F%8D%82%3C%2Ftext%3E%3Ctext%20x%3D'132'%20y%3D'144'%20font-size%3D'13'%3E%F0%9F%8D%81%3C%2Ftext%3E%3C%2Fsvg%3E");
+    background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%3E%3Ctext%20x%3D'10'%20y%3D'34'%20font-size%3D'18'%20fill%3D'rgba(225%2C120%2C35%2C.25)'%3E%E2%98%85%3C%2Ftext%3E%3Ctext%20x%3D'110'%20y%3D'60'%20font-size%3D'22'%20fill%3D'rgba(240%2C140%2C40%2C.25)'%3E%E2%98%85%3C%2Ftext%3E%3Ctext%20x%3D'40'%20y%3D'120'%20font-size%3D'15'%20fill%3D'rgba(205%2C90%2C25%2C.25)'%3E%E2%98%85%3C%2Ftext%3E%3Ctext%20x%3D'130'%20y%3D'140'%20font-size%3D'12'%20fill%3D'rgba(240%2C140%2C40%2C.25)'%3E%E2%98%85%3C%2Ftext%3E%3C%2Fsvg%3E");
   }
   body[data-season="3"]{
     background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNjAnIGhlaWdodD0nMTYwJz4KPHRleHQgeD0nMTAnIHk9JzM0JyBmb250LXNpemU9JzE4JyBmaWxsPSdyZ2JhKDMwLDEyMCwyNTUsMC4yNSknPiYjOTczMzs8L3RleHQ+Cjx0ZXh0IHg9JzExMCcgeT0nNjAnIGZvbnQtc2l6ZT0nMjInIGZpbGw9J3JnYmEoNDUsMTQwLDI1NSwwLjI1KSc+JiM5NzMzOzwvdGV4dD4KPHRleHQgeD0nNDAnIHk9JzEyMCcgZm9udC1zaXplPScxNScgZmlsbD0ncmdiYSgyMCw5MCwyMjAsMC4yNSknPiYjOTczMzs8L3RleHQ+Cjx0ZXh0IHg9JzEzMCcgeT0nMTQwJyBmb250LXNpemU9JzEyJyBmaWxsPSdyZ2JhKDQ1LDE0MCwyNTUsMC4yNSknPiYjOTczMzs8L3RleHQ+Cjwvc3ZnPgo=");
@@ -161,45 +161,31 @@
   }
   .charPanel{
     background:#ffffff; border-radius:14px;
-    padding:8px 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 -2px 0 rgba(0,0,0,.06), 0 3px 4px rgba(0,0,0,.14);
-    display:flex; align-items:center; gap:8px;
+    padding:10px; box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 -2px 0 rgba(0,0,0,.06), 0 3px 4px rgba(0,0,0,.14);
+    display:flex; flex-direction:column; gap:8px;
   }
   .charPanelHeader{
-    display:flex; flex-direction:column; align-items:flex-start; gap:4px; flex:1; min-width:0;
+    display:flex; align-items:center; gap:7px; width:100%; min-width:0;
   }
-  .charPanelHeader span{
-    font-family:var(--font-heading); font-weight:700; font-size:11px; color:var(--accent2);
-    text-transform:uppercase; letter-spacing:.04em;
+  .charPanelHeader label{
+    font-family:var(--font-heading); font-weight:700; font-size:10px; color:var(--accent2);
+    text-transform:uppercase; letter-spacing:.02em; flex-shrink:0;
   }
-  #shopBtn{
+  .charPanelHeader input{
+    flex:1; min-width:0; font-family:var(--font-body); font-size:13px; font-weight:700;
+    border:none; border-radius:9px; padding:6px 8px; background:#eef5fd; color:var(--text);
+    box-shadow:inset 0 1px 2px rgba(27,58,92,.12);
+  }
+  .charPanelHeader input:focus{ outline:2px solid var(--accent); }
+  #managementBtn{
+    width:100%;
     font-family:var(--font-body); font-weight:700; font-size:11px; cursor:pointer;
     background:linear-gradient(180deg,#8fcaf9,var(--accent)); color:#fff; border:none;
-    border-radius:9px; padding:5px 10px;
+    border-radius:9px; padding:7px 10px;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.15), 0 2px 3px rgba(0,0,0,.15);
     transition:box-shadow .08s, transform .08s;
   }
-  #shopBtn:hover{ transform:translateY(1px) scale(1.03); box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -1px 0 rgba(0,0,0,.15), 0 1px 2px rgba(0,0,0,.15); }
-  .charWindow{
-    width:36px; height:36px; flex-shrink:0;
-    background:repeating-conic-gradient(#eaf2fa 0% 25%, #dde8f3 0% 50%) 50% / 9px 9px;
-    border-radius:9px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.7), inset 0 -1px 0 rgba(0,0,0,.15);
-    display:flex; align-items:center; justify-content:center;
-    overflow:hidden;
-  }
-  .charWindow .placeholder-icon{ font-size:18px; }
-  .charWindow .placeholder-text{ display:none; }
-  .mayorRow{
-    display:flex; align-items:center; gap:8px; font-family:var(--font-body);
-    font-weight:700; font-size:13px; color:var(--text);
-  }
-  .mayorRow input{
-    flex:1; min-width:0; font-family:var(--font-body); font-size:13px; font-weight:700;
-    border:none; border-radius:10px; padding:6px 9px;
-    background:#ffffff; color:var(--text);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.1);
-  }
-  .mayorRow input:focus{ outline:2px solid var(--accent); }
+  #managementBtn:hover{ transform:translateY(1px); box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -1px 0 rgba(0,0,0,.15), 0 1px 2px rgba(0,0,0,.15); }
   .mayorQuote{
     background:#ffffff; border-radius:14px;
     padding:10px 12px; font-size:12px; line-height:1.5; color:var(--text);
@@ -842,9 +828,9 @@
 
   #statbar, .stat, .townBadge, .iconBtn,
   #buildBar, .dock-btn,
-  .sidebar, .charPanel, .charWindow, .mayorRow input, .mayorQuote,
+  .sidebar, .charPanel, .charPanelHeader input, .mayorQuote,
   #questPanel, .quest-card, .quest-fulfill, .badge,
-  #shopBtn, #logBtn, #logPanel,
+  #managementBtn, #logBtn, #logPanel,
   #tooltip, #eventBubble, #townHallBubble,
   #modalBox, .modal-header, .modal-stat-row, .resident-row,
   .modal-product-icon, .modal-footer button, .modal-close,
@@ -911,21 +897,11 @@
 
 <div class="sidebar">
   <div class="charPanel">
-    <div class="charWindow" id="charWindow">
-      <img src="https://raw.githubusercontent.com/phuongm1409/townverse/main/res/character.png"
-           onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
-           style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated;">
-      <div class="placeholder-icon" style="display:none;">🧑</div>
-    </div>
     <div class="charPanelHeader">
-      <span>Character</span>
-      <button id="shopBtn">🛍️ Shop</button>
+      <label for="mayorNameInput">Mayor:</label>
+      <input id="mayorNameInput" type="text" maxlength="24" placeholder="Enter name">
     </div>
-  </div>
-
-  <div class="mayorRow">
-    <span>Mayor:</span>
-    <input id="mayorNameInput" type="text" maxlength="24" placeholder="Enter name">
+    <button id="managementBtn">🏛️ Management</button>
   </div>
 
   <div>
@@ -1658,12 +1634,13 @@ const TOWN_YEAR_TICKS = SEASON_LENGTH * SEASON_NAMES.length;
 const MAYORS_OFFICE_EMPLOYEES = 4;
 const MAINTENANCE_EMPLOYEES = 5;
 const FESTIVAL_COST = 2000;
-function departmentsUnlocked(){ return state.townHallLevel > 5; }
+function departmentsUnlocked(){ return state.townHallLevel >= 5; }
 function mayorsOfficeStaffed(){ return departmentsUnlocked() && state.population >= MAYORS_OFFICE_EMPLOYEES; }
 function maintenanceStaffed(){ return departmentsUnlocked() && state.population >= MAINTENANCE_EMPLOYEES; }
 
 // ---- Auto-fetched building media (falls back to built-in pixel art / colors if missing) ----
-const RES_BASE = 'https://raw.githubusercontent.com/phuongm1409/townverse/main/res/';
+const RES_BASE = TOWNVERSE_RES + 'asset/';
+const RES_CACHE_VERSION = Date.now();
 const RES_FILES = {
   road1:'road 1.png', road2:'road 2.png', road3:'road 3.png', road4:'road 4.png', roadX:'road X.png',
   house:'house.png', farm:'farm.png', factory:'factory.png', park:'park.png',
@@ -1675,7 +1652,7 @@ const _resCache = {};
 function resFileFor(type, variant){
   const key = variant || type;
   const file = RES_FILES[key];
-  return file ? RES_BASE + encodeURIComponent(file) : null;
+  return file ? RES_BASE + encodeURIComponent(file) + '?v=' + RES_CACHE_VERSION : null;
 }
 function tryResImage(url, onOk){
   if(!url) return;
@@ -3084,7 +3061,7 @@ function openTownHallModal(i){
       <div class="department-detail">Needs ${MAINTENANCE_EMPLOYEES} employees. Restores roads destroyed by events after a 10-second arrival and repair time.</div>
       <div class="department-status">${maintenanceStaffed() ? '✅ Staffed' : '⬜ Needs employees'}</div>
     </div>`;
-  const body = state.townHallLevel > 5
+  const body = departmentsUnlocked()
     ? `<div class="townhall-columns"><div><div class="modal-section-label">${reqs ? 'Requirements for Level '+nextLevel : 'Upgrade'}</div>${requirementsHtml}</div><div>${departmentsHtml}</div></div>`
     : requirementsHtml;
   const footer = reqs
@@ -3092,7 +3069,7 @@ function openTownHallModal(i){
        <button class="modal-btn-primary" ${allMet ? '' : 'disabled'} onclick="upgradeTownHall()">Upgrade</button>`
     : `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`;
   openModal(reqs ? `🏛️ Upgrade to Level ${nextLevel}` : `🏛️ Town Hall — Level ${state.townHallLevel}`,
-    body, footer, state.townHallLevel > 5);
+    body, footer, departmentsUnlocked());
 }
 
 function handleTileClick(i){
@@ -3501,8 +3478,13 @@ document.getElementById('statbar').addEventListener('click', (e)=>{
     toggleBgm();
   }
 });
-document.getElementById('shopBtn').onclick = ()=>{
-  log("The mayor's shop is coming soon — custom outfits and items on the way!");
+document.getElementById('managementBtn').onclick = ()=>{
+  const townHallIndex = mainIndicesOfType('townhall')[0];
+  if(townHallIndex == null){
+    log('Build a Town Hall to access Management.');
+    return;
+  }
+  openTownHallModal(townHallIndex);
 };
 const mayorInput = document.getElementById('mayorNameInput');
 mayorInput.addEventListener('input', ()=>{
