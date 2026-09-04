@@ -39,6 +39,19 @@
     display:flex; align-items:center; justify-content:center;
     height:100vh; overflow:hidden; padding:28px;
   }
+  body[data-season]{ background-color:#ffffff; }
+  body[data-season="0"]{
+    background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%3E%3Ctext%20x%3D'12'%20y%3D'36'%20font-size%3D'20'%20fill%3D'rgba(245%2C120%2C170%2C.42)'%3E%E2%9C%BF%3C%2Ftext%3E%3Ctext%20x%3D'108'%20y%3D'72'%20font-size%3D'16'%20fill%3D'rgba(110%2C190%2C105%2C.38)'%3E%E2%9C%BF%3C%2Ftext%3E%3Ctext%20x%3D'48'%20y%3D'132'%20font-size%3D'18'%20fill%3D'rgba(255%2C175%2C85%2C.4)'%3E%E2%9C%BF%3C%2Ftext%3E%3C%2Fsvg%3E");
+  }
+  body[data-season="1"]{
+    background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%3E%3Ctext%20x%3D'10'%20y%3D'34'%20font-size%3D'18'%20fill%3D'rgba(245%2C190%2C35%2C.42)'%3E%E2%98%85%3C%2Ftext%3E%3Ctext%20x%3D'110'%20y%3D'60'%20font-size%3D'22'%20fill%3D'rgba(255%2C205%2C45%2C.42)'%3E%E2%98%85%3C%2Ftext%3E%3Ctext%20x%3D'40'%20y%3D'120'%20font-size%3D'15'%20fill%3D'rgba(235%2C170%2C20%2C.42)'%3E%E2%98%85%3C%2Ftext%3E%3Ctext%20x%3D'130'%20y%3D'140'%20font-size%3D'12'%20fill%3D'rgba(255%2C205%2C45%2C.42)'%3E%E2%98%85%3C%2Ftext%3E%3C%2Fsvg%3E");
+  }
+  body[data-season="2"]{
+    background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%3E%3Ctext%20x%3D'10'%20y%3D'34'%20font-size%3D'18'%3E%F0%9F%8D%82%3C%2Ftext%3E%3Ctext%20x%3D'106'%20y%3D'68'%20font-size%3D'20'%3E%F0%9F%8D%81%3C%2Ftext%3E%3Ctext%20x%3D'38'%20y%3D'126'%20font-size%3D'16'%3E%F0%9F%8D%82%3C%2Ftext%3E%3Ctext%20x%3D'132'%20y%3D'144'%20font-size%3D'13'%3E%F0%9F%8D%81%3C%2Ftext%3E%3C%2Fsvg%3E");
+  }
+  body[data-season="3"]{
+    background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNjAnIGhlaWdodD0nMTYwJz4KPHRleHQgeD0nMTAnIHk9JzM0JyBmb250LXNpemU9JzE4JyBmaWxsPSdyZ2JhKDMwLDEyMCwyNTUsMC4yNSknPiYjOTczMzs8L3RleHQ+Cjx0ZXh0IHg9JzExMCcgeT0nNjAnIGZvbnQtc2l6ZT0nMjInIGZpbGw9J3JnYmEoNDUsMTQwLDI1NSwwLjI1KSc+JiM5NzMzOzwvdGV4dD4KPHRleHQgeD0nNDAnIHk9JzEyMCcgZm9udC1zaXplPScxNScgZmlsbD0ncmdiYSgyMCw5MCwyMjAsMC4yNSknPiYjOTczMzs8L3RleHQ+Cjx0ZXh0IHg9JzEzMCcgeT0nMTQwJyBmb250LXNpemU9JzEyJyBmaWxsPSdyZ2JhKDQ1LDE0MCwyNTUsMC4yNSknPiYjOTczMzs8L3RleHQ+Cjwvc3ZnPgo=");
+  }
   @keyframes starDrift{
     from{ background-position:0 0; }
     to{ background-position:160px 160px; }
@@ -2226,6 +2239,7 @@ function mainIndicesOfType(type){
 
 let _prevStatVals = {};
 function renderStats(){
+  document.body.dataset.season = String(state.season || 0);
   const jobs = jobsAvailable();
   const employed = Math.min(jobs, state.population);
   const happinessClass = state.happiness < 30 ? 'bad' : state.happiness < 55 ? 'warn' : '';
