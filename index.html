@@ -253,6 +253,11 @@
     60%{ transform:scale(1.12); }
     100%{ transform:scale(1); filter:brightness(1); }
   }
+  .tile.wind-hit{ filter:brightness(.92) saturate(.85); animation:windShake .35s ease-in-out infinite alternate; }
+  @keyframes windShake{
+    from{ transform:translateX(-1px) rotate(-.6deg); }
+    to{ transform:translateX(1px) rotate(.6deg); }
+  }
   #floaters{ position:absolute; top:0; left:0; pointer-events:none; z-index:20; overflow:visible; }
   .floater{
     position:absolute; transform:translate(-50%, 0);
@@ -362,6 +367,17 @@
   @keyframes rainFall{
     from{ background-position:0 0; }
     to{ background-position:-60px 90px; }
+  }
+  /* Winter storm: same full-stage layer, tiled with winter.gif instead of the rain lines */
+  #weather.snowing{
+    background-color:rgba(230,244,255,.22);
+    background-repeat:repeat;
+    background-size:110px 110px;
+  }
+  #fallWindOverlay{
+    position:absolute; top:0; left:0; pointer-events:none; z-index:16;
+    display:none; object-fit:cover; image-rendering:pixelated;
+    border-radius:4px;
   }
   .resident-avatar{ animation:residentBob 2.4s ease-in-out infinite; }
   .resident-row:nth-child(2n) .resident-avatar{ animation-delay:.4s; }
@@ -829,6 +845,7 @@
         <div id="fires"></div>
         <div id="floaters"></div>
         <div id="weather"></div>
+        <img id="fallWindOverlay" alt="">
         <div id="levelFlash"></div>
       </div>
     </div>
@@ -1120,6 +1137,143 @@ function startRain(durationMs){
     clearInterval(interval);
     weather.classList.remove('raining');
   }, durationMs);
+}
+
+// ---- Seasonal weather: Fall Wind Event & Winter Storm ----
+const FALL_WIND_GIF = TOWNVERSE_RES + 'img/fall-wind-event.gif';
+const FALL_WIND_SFX_URL = TOWNVERSE_RES + 'soundfx/fall-wind-event.mp3';
+const WINTER_STORM_GIF = TOWNVERSE_RES + 'img/winter.gif';
+const FALL_WIND_TICKS = 5; // 15s at 3s/tick, same pacing as GROWTH_TICKS
+const AUTUMN_SEASON = 2, WINTER_SEASON = 3; // indices into SEASON_NAMES
+
+let fallWindActiveTile = null;
+let fallWindAudioEl = null;
+function ensureFallWindAudio(){
+  if(!fallWindAudioEl){
+    try{
+      fallWindAudioEl = new Audio(FALL_WIND_SFX_URL);
+      fallWindAudioEl.loop = true;
+      fallWindAudioEl.volume = 0.45;
+    }catch(e){}
+  }
+  return fallWindAudioEl;
+}
+
+// A tile counts as a "production lot" if its building type is in the Production category.
+function isProductionLot(tile){
+  const b = tile && BUILDINGS[tile.type];
+  return !!(b && b.category === 'Production');
+}
+// Per-tile happiness debuff left behind by a fall wind event, read by
+// houseResidents()/buildingEmployees() so the affected residents/workers show it.
+function windHappinessPenalty(tile){
+  return (tile && tile._windUntil && state.tick < tile._windUntil) ? (tile._windPct || 0) : 0;
+}
+function windPaused(tile){
+  return !!(tile && tile._windUntil && state.tick < tile._windUntil && tile._windPause);
+}
+function winterStormActive(){
+  return !!(state.winterStormUntil && state.tick < state.winterStormUntil);
+}
+// Whether a specific tile's production output should count this tick.
+function isProductionPaused(tile, type){
+  if(windPaused(tile)) return true;
+  if(type === 'fishery' && winterStormActive()) return true; // fisheries pause completely in a storm
+  return false;
+}
+// Count of a building type currently actually producing (excludes paused tiles).
+function activeCount(type){
+  let n = 0;
+  state.tiles.forEach(t=>{ if(t && t.type === type && !isProductionPaused(t, type)) n++; });
+  return n;
+}
+
+function positionOverStage(el, index){
+  const r = Math.floor(index/COLS), c = index % COLS;
+  el.style.left = (c*TILE_W) + 'px';
+  el.style.top = (r*TILE_H) + 'px';
+  el.style.width = TILE_W + 'px';
+  el.style.height = TILE_H + 'px';
+}
+function showFallWindOverlay(index){
+  const el = document.getElementById('fallWindOverlay');
+  if(!el) return;
+  positionOverStage(el, index);
+  el.src = FALL_WIND_GIF;
+  el.style.display = 'block';
+}
+function hideFallWindOverlay(){
+  const el = document.getElementById('fallWindOverlay');
+  if(el) el.style.display = 'none';
+}
+
+function maybeTriggerFallWindEvent(){
+  if(state.season !== AUTUMN_SEASON) return;
+  if(fallWindActiveTile != null) return; // one gust at a time
+  if(Math.random() > 0.14) return; // "sometimes"
+  const idx = anyBuildingIndex();
+  const tile = state.tiles[idx];
+  if(!tile) return;
+  const untilTick = state.tick + FALL_WIND_TICKS;
+  tile._windUntil = untilTick;
+  tile._windPct = 20;
+  const production = isProductionLot(tile);
+  tile._windPause = production; // pause output only for production lots
+
+  fallWindActiveTile = idx;
+  showFallWindOverlay(idx);
+  const audio = ensureFallWindAudio();
+  if(audio){ try{ audio.currentTime = 0; audio.play().catch(()=>{}); }catch(e){} }
+
+  const msg = production
+    ? `A gust of fall wind swept through the ${BUILDINGS[tile.type].name.toLowerCase()}, unsettling workers and pausing production.`
+    : `A gust of fall wind swept through, unsettling everyone nearby.`;
+  log(`🍂 ${msg}`);
+  showFloater(idx, '-20% 😟', 'bad');
+  renderGrid(); renderStats();
+
+  setTimeout(()=>{
+    hideFallWindOverlay();
+    if(audio){ try{ audio.pause(); }catch(e){} }
+    fallWindActiveTile = null;
+    renderGrid(); renderStats();
+  }, FALL_WIND_TICKS * 3000);
+}
+
+function showWinterStormOverlay(){
+  const el = document.getElementById('weather');
+  if(!el) return;
+  el.style.width = (COLS*TILE_W)+'px';
+  el.style.height = (ROWS*TILE_H)+'px';
+  el.style.backgroundImage = `url("${WINTER_STORM_GIF}")`;
+  el.classList.add('show', 'snowing');
+}
+function hideWinterStormOverlay(){
+  const el = document.getElementById('weather');
+  if(!el) return;
+  el.classList.remove('show', 'snowing');
+  el.style.backgroundImage = '';
+}
+
+function maybeTriggerWinterStorm(){
+  if(state.season !== WINTER_SEASON) return;
+  if(winterStormActive()) return; // already snowing
+  if(Math.random() > 0.10) return; // "sometimes"
+  const remainingInSeason = SEASON_LENGTH - (state.tick % SEASON_LENGTH);
+  const minTicks = 4; // ~12s: closest tick count to a 10s minimum at 3s/tick
+  const maxTicks = Math.max(minTicks, remainingInSeason); // up to the rest of the season
+  const durationTicks = minTicks + Math.floor(Math.random() * (maxTicks - minTicks + 1));
+  state.winterStormUntil = state.tick + durationTicks;
+  showWinterStormOverlay();
+  playSfx('event');
+  log('❄️ A snow storm rolled in! Fisheries are idle and crops are growing slowly until it passes.');
+}
+function checkWinterStormExpiry(){
+  if(state.winterStormUntil != null && state.tick >= state.winterStormUntil){
+    state.winterStormUntil = null;
+    hideWinterStormOverlay();
+    log('❄️ The snow storm passed.');
+  }
 }
 
 // ---- Idle life: chimney smoke from factories ----
@@ -1529,8 +1683,8 @@ const EVENTS = [
   { key:'storm', kind:'bad', icon:'⛈️', title:'Storm', weight:2,
     run(){
       state.happiness = Math.max(0, state.happiness - 4);
-      triggerStormOverlay();
-      playStormSound();
+      startRain(6000);
+      playSfx('event');
       const i = anyBuildingIndex();
       return { index:i, msg:`A storm rolled through town, keeping everyone indoors for a while.`, floater:'-4 😊', floaterCls:'bad' };
     }},
@@ -2120,6 +2274,7 @@ function renderGrid(){
     div.style.width = TILE_W+'px';
     div.style.height = TILE_H+'px';
     if(t && t.type === 'mountain' && t.snow) div.classList.add('snow');
+    if(windHappinessPenalty(t) > 0) div.classList.add('wind-hit');
     div.onclick = ()=> handleTileClick(i);
     grid.appendChild(div);
   });
@@ -2136,6 +2291,12 @@ function renderGrid(){
     floaters.style.width = (COLS*TILE_W)+'px';
     floaters.style.height = (ROWS*TILE_H)+'px';
   }
+  const weatherEl = document.getElementById('weather');
+  if(weatherEl){
+    weatherEl.style.width = (COLS*TILE_W)+'px';
+    weatherEl.style.height = (ROWS*TILE_H)+'px';
+  }
+  if(fallWindActiveTile != null) showFallWindOverlay(fallWindActiveTile);
 }
 
 // ---- Floating text popups (+coins, +food, etc.) ----
@@ -2215,6 +2376,7 @@ function houseResidents(i){
   const factoryJobs = countType('factory') * 2;
   const storeJobs = countType('store') * 2;
 
+  const debuffPct = windHappinessPenalty(state.tiles[i]);
   const residents = [];
   for(let k=0;k<occupied;k++){
     const globalIdx = before + k;
@@ -2227,7 +2389,7 @@ function houseResidents(i){
     const first = FIRST_NAMES[Math.floor(seededRand(seed) * FIRST_NAMES.length)];
     const last = LAST_NAMES[Math.floor(seededRand(seed + 1) * LAST_NAMES.length)];
     const variance = Math.floor((seededRand(seed + 2) - 0.5) * 20);
-    const personalHappiness = Math.max(0, Math.min(100, Math.floor(state.happiness) + variance));
+    const personalHappiness = Math.max(0, Math.min(100, Math.floor(state.happiness * (1 - debuffPct/100)) + variance));
 
     residents.push({ name: `${first} ${last}`, job: jobTitle, happiness: personalHappiness });
   }
@@ -2265,13 +2427,14 @@ function buildingEmployees(i){
   const employed = Math.min(jobsAvailable(), state.population);
   const filled = Math.max(0, Math.min(capacity, employed - before));
 
+  const debuffPct = windHappinessPenalty(t);
   const employees = [];
   for(let k=0;k<filled;k++){
     const seed = i * 53 + k * 17 + 11;
     const first = FIRST_NAMES[Math.floor(seededRand(seed) * FIRST_NAMES.length)];
     const last = LAST_NAMES[Math.floor(seededRand(seed + 1) * LAST_NAMES.length)];
     const variance = Math.floor((seededRand(seed + 2) - 0.5) * 20);
-    const happiness = Math.max(0, Math.min(100, Math.floor(state.happiness) + variance));
+    const happiness = Math.max(0, Math.min(100, Math.floor(state.happiness * (1 - debuffPct/100)) + variance));
     employees.push({ name:`${first} ${last}`, job: JOB_TITLES[type] || 'Worker', happiness });
   }
   return { filled, capacity, employees };
@@ -2900,12 +3063,20 @@ function gameTick(){
   if(newSeason !== state.season){
     state.season = newSeason;
     log(`The season changed to ${SEASON_NAMES[state.season]}.`);
+    if(newSeason !== WINTER_SEASON && state.winterStormUntil != null){
+      state.winterStormUntil = null;
+      hideWinterStormOverlay();
+    }
     mainIndicesOfType('concerthall').forEach(i=>{
       state.happiness = Math.min(100, state.happiness + 20);
       showFloater(i, '+20% 😊', 'good');
       log('🎶 A concert lit up the Concert Hall! The whole town is buzzing.');
     });
   }
+
+  checkWinterStormExpiry();
+  maybeTriggerFallWindEvent();
+  maybeTriggerWinterStorm();
 
   const jobs = jobsAvailable();
   const farms = countType('farm');
@@ -2927,20 +3098,31 @@ function gameTick(){
   const employed = Math.min(jobs, state.population);
   const unemployed = Math.max(0, state.population - jobs);
 
-  const foodProduced = farms * 3 + fisheries * 3;
+  // Active counts exclude tiles currently paused by the fall wind event (and,
+  // for fisheries specifically, any active winter storm). Job counts above
+  // stay based on the full counts — workers are still there, just idle.
+  const activeFarms = activeCount('farm');
+  const activeFisheries = activeCount('fishery');
+  const activeFactories = activeCount('factory');
+  const activeMines = activeCount('mine');
+  const activeWineries = activeCount('winery');
+  const activeSawmills = activeCount('sawmill');
+  const activeQuarries = activeCount('quarry');
+
+  const foodProduced = activeFarms * 3 + activeFisheries * 3;
   const foodConsumed = state.population * 1;
   state.food += foodProduced - foodConsumed;
   const starving = state.food < 0;
   if(state.food < 0) state.food = 0;
 
-  const factoryWorkers = Math.min(employed, factories*2);
-  const mineWorkers = Math.min(employed, mines*2);
-  const wineryWorkers = Math.min(employed, wineries*2);
+  const factoryWorkers = Math.min(employed, activeFactories*2);
+  const mineWorkers = Math.min(employed, activeMines*2);
+  const wineryWorkers = Math.min(employed, activeWineries*2);
   const coinsProduced = factoryWorkers * 2 + mineWorkers * 2 + wineryWorkers * 2;
   const upkeep = countType('house') * 0.5 + factories * 0.5 + mines * 0.5 + wineries * 0.5;
   state.coins += coinsProduced - upkeep;
   if(state.coins < 0) state.coins = 0;
-  state.wood += 0.5 + sawmills * 2 + quarries * 1.5;
+  state.wood += 0.5 + activeSawmills * 2 + activeQuarries * 1.5;
 
   let happinessDelta = 0;
   happinessDelta += parks * 1.5;
@@ -2956,6 +3138,7 @@ function gameTick(){
   happinessDelta -= unemployed * 2;
   happinessDelta -= starving ? 8 : 0;
   happinessDelta += (state.food > state.population * 5) ? 1 : 0;
+  happinessDelta -= winterStormActive() ? 10 : 0; // -10% happiness while a snow storm rages
   happinessDelta -= 0.3;
   state.happiness = Math.max(0, Math.min(100, state.happiness + happinessDelta));
 
@@ -2969,7 +3152,9 @@ function gameTick(){
   state.tiles.forEach((t, i)=>{
     if(!t || t.type !== 'farm') return;
     if(t.growth == null) t.growth = 0;
-    t.growth++;
+    if(!isProductionPaused(t, 'farm')){
+      t.growth += winterStormActive() ? 0.5 : 1; // crops take 2x as long to grow during a snow storm
+    }
     if(t.growth >= GROWTH_TICKS){
       state.coins += 50;
       playHarvestSound();
@@ -3025,6 +3210,7 @@ mayorInput.addEventListener('input', ()=>{
 });
 const loaded = load();
 if(!state.townHallLevel) state.townHallLevel = 1;
+if(state.winterStormUntil === undefined) state.winterStormUntil = null;
 mayorInput.value = state.mayorName || 'Mayor';
 renderBuildList();
 computeTileSize();
