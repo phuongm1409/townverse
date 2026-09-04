@@ -477,6 +477,23 @@
     font-family:var(--font-heading); font-size:7px; font-weight:700; color:#fff;
     text-shadow:0 1px 1px rgba(0,0,0,.4); text-align:center; white-space:nowrap;
   }
+  #concertAnnounceLayer{ position:absolute; top:0; left:0; pointer-events:none; z-index:19; overflow:visible; }
+  .concert-announce-chip{
+    position:absolute; transform:translateY(-100%);
+    display:flex; align-items:center; justify-content:center; gap:4px;
+    background:#ffffff; border-radius:8px; padding:3px 7px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(0,0,0,.06), 0 2px 4px rgba(0,0,0,.2);
+    white-space:nowrap;
+    animation: concertChipPulse 1.3s ease-in-out infinite;
+  }
+  .concert-announce-icon{ font-size:10px; line-height:1; }
+  .concert-announce-name{
+    font-family:var(--font-heading); font-size:8px; font-weight:700; color:var(--concerthall);
+  }
+  @keyframes concertChipPulse{
+    0%,100%{ transform:translateY(-100%) scale(1); }
+    50%{ transform:translateY(calc(-100% - 3px)) scale(1.04); }
+  }
   .tile:hover{ filter:brightness(1.12); }
 
   #tooltip{
@@ -854,6 +871,7 @@
         <div id="trucks"></div>
         <div id="fires"></div>
         <div id="floaters"></div>
+        <div id="concertAnnounceLayer"></div>
         <div id="weather"></div>
         <img id="fallWindOverlay" alt="">
         <img id="snowEventOverlay" alt="">
@@ -1555,6 +1573,15 @@ const RESTAURANT_CUISINE_NAMES = { ramen:'Ramen', pasta:'Pasta', common:'Home-st
 // ---- Seasons (drive the Concert Hall's once-per-season show) ----
 const SEASON_NAMES = ['🌱 Spring','☀️ Summer','🍂 Autumn','❄️ Winter'];
 const SEASON_LENGTH = 40; // ticks per season
+const CONCERT_ANNOUNCE_TICKS = 5; // show the "coming soon" chip this many ticks before the show
+const CONCERT_SHOWS = [
+  'THREE MAN DOWN concert',
+  'BUS concert',
+  'Kim Ji Won fanmeeting',
+  'PUN COMEBACK SHOW',
+  'ONG SEONGWU concert',
+  'ONG SEONGWU fanmeeting'
+];
 
 const LEVEL_REQS = [
   null, // level 1 has no requirement (starting level)
@@ -2388,6 +2415,27 @@ function renderGrid(){
     weatherEl.style.height = (ROWS*TILE_H)+'px';
   }
   if(fallWindActiveTile != null) showFallWindOverlay(fallWindActiveTile);
+  if(snowEventActiveTile != null) showSnowEventOverlay(snowEventActiveTile);
+  renderConcertAnnouncements();
+}
+
+// ---- Concert Hall: floating "coming soon" chip above the hall ----
+function renderConcertAnnouncements(){
+  const layer = document.getElementById('concertAnnounceLayer');
+  if(!layer) return;
+  layer.innerHTML = '';
+  mainIndicesOfType('concerthall').forEach(i=>{
+    const t = state.tiles[i];
+    if(!t || !t._upcomingShow) return;
+    const r = Math.floor(i/COLS), c = i % COLS;
+    const chip = document.createElement('div');
+    chip.className = 'concert-announce-chip';
+    chip.style.left = (c*TILE_W) + 'px';
+    chip.style.top = (r*TILE_H - 4) + 'px';
+    chip.style.width = (TILE_W*2) + 'px';
+    chip.innerHTML = `<span class="concert-announce-icon">🎤</span><span class="concert-announce-name">${t._upcomingShow}</span>`;
+    layer.appendChild(chip);
+  });
 }
 
 // ---- Floating text popups (+coins, +food, etc.) ----
@@ -3148,6 +3196,17 @@ function handleTileClick(i){
 function gameTick(){
   state.tick++;
 
+  // ---- Concert Hall: announce the upcoming show a few ticks ahead of time ----
+  const ticksUntilConcert = SEASON_LENGTH - (state.tick % SEASON_LENGTH);
+  if(ticksUntilConcert === CONCERT_ANNOUNCE_TICKS){
+    mainIndicesOfType('concerthall').forEach(i=>{
+      const t = state.tiles[i];
+      if(!t) return;
+      t._upcomingShow = CONCERT_SHOWS[Math.floor(Math.random()*CONCERT_SHOWS.length)];
+      log(`🎫 "${t._upcomingShow}" is coming to the Concert Hall in ${CONCERT_ANNOUNCE_TICKS} ticks!`);
+    });
+  }
+
   // ---- Seasons: a new season triggers every Concert Hall's show ----
   const newSeason = Math.floor(state.tick / SEASON_LENGTH) % SEASON_NAMES.length;
   if(state.season == null) state.season = newSeason;
@@ -3159,9 +3218,12 @@ function gameTick(){
       hideWinterStormOverlay();
     }
     mainIndicesOfType('concerthall').forEach(i=>{
+      const t = state.tiles[i];
+      const showName = (t && t._upcomingShow) ? t._upcomingShow : null;
+      if(t) delete t._upcomingShow;
       state.happiness = Math.min(100, state.happiness + 20);
       showFloater(i, '+20% 😊', 'good');
-      log('🎶 A concert lit up the Concert Hall! The whole town is buzzing.');
+      log(showName ? `🎶 "${showName}" lit up the Concert Hall! The whole town is buzzing.` : '🎶 A concert lit up the Concert Hall! The whole town is buzzing.');
     });
   }
 
