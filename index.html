@@ -266,6 +266,33 @@
     animation:floatUp 1.1s ease-out forwards;
   }
   .floater.bad{ color:#d64545; }
+  .cursor-warning{
+    position:fixed; z-index:10000; pointer-events:none; white-space:nowrap;
+    color:#d64545; font-family:var(--font-heading); font-size:10px; font-weight:700;
+    text-shadow:0 1px 0 #fff, 0 0 3px rgba(255,255,255,.9);
+    animation:cursorWarningUp 1.15s ease-out forwards;
+  }
+  @keyframes cursorWarningUp{
+    0%{ transform:translate(-50%,0); opacity:0; }
+    12%{ opacity:1; }
+    100%{ transform:translate(-50%,-46px); opacity:0; }
+  }
+  #residentNotifications{
+    position:fixed; right:18px; top:76px; z-index:180; width:270px;
+    pointer-events:none;
+  }
+  .resident-notification{
+    display:flex; align-items:center; gap:10px; background:#fff; border-radius:12px;
+    padding:10px 12px; color:var(--text); box-shadow:0 5px 16px rgba(27,58,92,.22);
+    animation:notiIn .22s ease-out;
+  }
+  .resident-notification .noti-icon{
+    width:36px; height:36px; border-radius:50%; display:flex; align-items:center;
+    justify-content:center; font-size:19px; flex-shrink:0; background:#dcecff;
+  }
+  .resident-notification .noti-name{ font-weight:800; font-size:12px; color:var(--accent2); }
+  .resident-notification .noti-action{ font-size:11px; line-height:1.35; margin-top:2px; }
+  @keyframes notiIn{ from{ transform:translateX(25px); opacity:0; } to{ transform:none; opacity:1; } }
   @keyframes floatUp{
     0%{ transform:translate(-50%, 0) scale(.8); opacity:0; }
     15%{ transform:translate(-50%, -6px) scale(1.1); opacity:1; }
@@ -560,7 +587,7 @@
     transition:box-shadow .08s, transform .08s;
   }
   .quest-fulfill:hover{ transform:translateY(1px); box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -1px 0 rgba(0,0,0,.15), 0 1px 2px rgba(0,0,0,.15); }
-  .quest-fulfill:disabled{ background:#d8dce2; cursor:not-allowed; box-shadow:none; transform:none; }
+  .quest-fulfill:disabled, .quest-fulfill[aria-disabled="true"]{ background:#d8dce2; cursor:pointer; box-shadow:none; transform:none; }
   .quest-empty{ font-size:12px; color:var(--muted); }
   #logPanel{
     position:fixed; top:66px; right:22px; z-index:80;
@@ -946,6 +973,8 @@
   <h2>Town Log</h2>
   <div id="log"></div>
 </div>
+
+<div id="residentNotifications"></div>
 
 <script>
 const ROWS = 12, COLS = 17;
@@ -1557,7 +1586,16 @@ const BUILDINGS = {
   sawmill: { name:'Sawmill', cost:{coins:40, wood:5},  desc:'Produces wood, 2 jobs',                                        category:'Production', unlockLevel:2 },
   quarry:  { name:'Quarry',  cost:{coins:50},          desc:'Must be placed next to a mountain. Produces wood, 2 jobs',     category:'Production', unlockLevel:3 },
   winery:  { name:'Winery',  cost:{coins:55, wood:10}, desc:'Must be placed next to a farm. Produces coins, +happiness, 2 jobs', category:'Production', unlockLevel:4 },
+  hospital: { name:'Hospital', cost:{coins:140, wood:25}, desc:'Health services, 5 jobs, improves town happiness', category:'Services', unlockLevel:4 },
+  hotel:    { name:'Hotel', cost:{coins:120, wood:20}, desc:'Tourism building, 4 jobs, earns visitor income', category:'Tourism', unlockLevel:3 },
+  resort:   { name:'Resort', cost:{coins:220, wood:35}, desc:'Premium tourism destination, 6 jobs, high visitor income', category:'Tourism', unlockLevel:5 },
+  museum:   { name:'Museum', cost:{coins:100, wood:15}, desc:'Cultural attraction, 3 jobs, earns visitor income', category:'Tourism', unlockLevel:3 },
+  aquarium: { name:'Aquarium', cost:{coins:160, wood:25}, desc:'Family attraction, 4 jobs, earns visitor income', category:'Tourism', unlockLevel:4 },
 };
+
+const TOURISM_TYPES = ['hotel','resort','museum','aquarium'];
+const TOURISM_VALUE = { hotel:3, resort:6, museum:3, aquarium:4 };
+const TOURISM_SEASON_MULTIPLIER = [1.5, 2, 0.75, 0.4];
 
 // ---- Apartment upgrade tiers: index 0 = level 1 (built at base cost above) ----
 const APARTMENT_LEVELS = [
@@ -1635,8 +1673,8 @@ const MAYORS_OFFICE_EMPLOYEES = 4;
 const MAINTENANCE_EMPLOYEES = 5;
 const FESTIVAL_COST = 2000;
 function departmentsUnlocked(){ return state.townHallLevel >= 5; }
-function mayorsOfficeStaffed(){ return departmentsUnlocked() && state.population >= MAYORS_OFFICE_EMPLOYEES; }
-function maintenanceStaffed(){ return departmentsUnlocked() && state.population >= MAINTENANCE_EMPLOYEES; }
+function mayorsOfficeStaffed(){ return departmentsUnlocked() && departmentEmployees('mayor').filled >= MAYORS_OFFICE_EMPLOYEES; }
+function maintenanceStaffed(){ return departmentsUnlocked() && departmentEmployees('maintenance').filled >= MAINTENANCE_EMPLOYEES; }
 
 // ---- Auto-fetched building media (falls back to built-in pixel art / colors if missing) ----
 const RES_BASE = TOWNVERSE_RES + 'asset/';
@@ -1647,6 +1685,9 @@ const RES_FILES = {
   townhall:'town hall.png', store:'store.png', bridge:'bridge.png',
   cinema:'cinema.png', concerthall:'concert hall.png',
   restaurant_ramen:'ramen-res.png', restaurant_pasta:'pasta-res.png', restaurant_common:'common-res.png',
+  apartment:'apartment.png', stadium:'stadium.png', clocktower:'clock tower.png', statue:'statue.png',
+  fishery:'fishery.png', mine:'mine.png', sawmill:'sawmill.png', quarry:'quarry.png', winery:'winery.png',
+  hospital:'hospital.png', hotel:'hotel.png', resort:'resort.png', museum:'museum.png', aquarium:'aquarium.png',
 };
 const _resCache = {};
 function resFileFor(type, variant){
@@ -1940,6 +1981,7 @@ let state = {
   mayorName: 'Mayor',
   townHallLevel: 1,
   destructionHistory: {},
+  tourists: 0,
   tick: 0,
   season: 0
 };
@@ -2010,11 +2052,11 @@ function expireQuests(){
   if(anyExpired){ renderQuests(); renderStats(); }
 }
 
-function fulfillQuest(id){
+function fulfillQuest(id, event){
   const q = state.quests.find(q=>q.id===id);
   if(!q) return;
   if(state[q.need.res] < q.need.amount){
-    log(`Not enough ${q.need.res} to fulfill ${q.name}'s request.`);
+    rejectInsufficient(event, `Not enough ${q.need.res} to fulfill ${q.name}'s request.`);
     return;
   }
   playSfx('fulfill');
@@ -2051,7 +2093,7 @@ function renderQuests(){
           <div class="quest-need">Needs ${q.need.amount} ${RES_LABEL[q.need.res]} · Reward: ${rewardText}</div>
           <div class="quest-row">
             <span class="quest-timer">⏳ ${remaining} ticks left</span>
-            <button class="quest-fulfill" data-no-click-sfx ${canAfford ? '' : 'disabled'} onclick="fulfillQuest(${q.id})">Fulfill</button>
+            <button class="quest-fulfill" data-no-click-sfx aria-disabled="${canAfford ? 'false' : 'true'}" onclick="fulfillQuest(${q.id}, event)">Fulfill</button>
           </div>
         </div>`;
     }).join('');
@@ -2160,6 +2202,7 @@ function load(){
       if(!state.nextQuestId) state.nextQuestId = 1;
       if(!state.mayorName) state.mayorName = 'Mayor';
       if(!state.destructionHistory || Array.isArray(state.destructionHistory)) state.destructionHistory = {};
+      if(state.tourists == null) state.tourists = 0;
       if(state.ecoScore == null) state.ecoScore = 0;
       if(state.season == null) state.season = Math.floor((state.tick||0) / SEASON_LENGTH) % SEASON_NAMES.length;
       const wanted = ROWS*COLS;
@@ -2198,6 +2241,11 @@ function jobsAvailable(){
     if(t && t.type==='sawmill') jobs += 2;
     if(t && t.type==='quarry') jobs += 2;
     if(t && t.type==='winery') jobs += 2;
+    if(t && t.type==='hospital') jobs += 5;
+    if(t && t.type==='hotel') jobs += 4;
+    if(t && t.type==='resort') jobs += 6;
+    if(t && t.type==='museum') jobs += 3;
+    if(t && t.type==='aquarium') jobs += 4;
   });
   if(departmentsUnlocked()) jobs += MAYORS_OFFICE_EMPLOYEES + MAINTENANCE_EMPLOYEES;
   return jobs;
@@ -2244,6 +2292,7 @@ function renderStats(){
       <div class="stat"><span>🪵</span><span class="val" data-key="wood">${Math.floor(state.wood)}</span></div>
       <div class="stat"><span>👥</span><span class="val" data-key="population">${state.population}/${state.housingCap}</span></div>
       <div class="stat"><span>💼</span><span class="val" data-key="jobs">${employed}/${jobs}</span></div>
+      <div class="stat" title="Current tourists"><span>🧳</span><span class="val" data-key="tourists">${state.tourists || 0}</span></div>
       <div class="stat ${happinessClass}"><span>😊</span><span class="val" data-key="happiness">${Math.floor(state.happiness)}%</span></div>
       <div class="stat eco ${state.ecoScore < 0 ? 'bad' : ''}" title="Eco score: rivers &amp; parks help, clearing mountains hurts"><span>🌿</span><span class="val" data-key="eco">${Math.floor(state.ecoScore || 0)}</span></div>
     </div>
@@ -2259,7 +2308,7 @@ function renderStats(){
   // bump animation when a resource value changes
   const nowVals = { coins:Math.floor(state.coins), food:Math.floor(state.food), wood:Math.floor(state.wood),
                      population:state.population, jobs:employed, happiness:Math.floor(state.happiness),
-                     eco:Math.floor(state.ecoScore || 0) };
+                     eco:Math.floor(state.ecoScore || 0), tourists:state.tourists || 0 };
   document.querySelectorAll('#statbar .val[data-key]').forEach(el=>{
     const key = el.dataset.key;
     const prev = _prevStatVals[key];
@@ -2308,10 +2357,11 @@ const BUILD_ICONS = {
   farm:'🌾', factory:'🏭', store:'🏪', park:'🌳', townhall:'🏛️',
   cinema:'🎬', restaurant:'🍽️', concerthall:'🎵',
   stadium:'🏟️', clocktower:'🕰️', statue:'🗿', fishery:'🎣', mine:'⛏️',
-  sawmill:'🪚', quarry:'🪨', winery:'🍷'
+  sawmill:'🪚', quarry:'🪨', winery:'🍷',
+  hospital:'🏥', hotel:'🏨', resort:'🌴', museum:'🏛️', aquarium:'🐠'
 };
 
-const BUILD_CATEGORY_ORDER = ['Infrastructure','Residential','Production','Decoration','Entertainment','Landmark'];
+const BUILD_CATEGORY_ORDER = ['Infrastructure','Residential','Production','Services','Tourism','Decoration','Entertainment','Landmark'];
 let selectedBuildCategory = 'Infrastructure';
 
 function renderBuildList(){
@@ -2435,6 +2485,8 @@ function renderGrid(){
         overlay.innerHTML = `<span class="concerthall-icon">🎵</span><span class="concerthall-label">Concert Hall</span>`;
         div.appendChild(overlay);
       }
+    } else if(t && resFileFor(t.type)){
+      applyResImage(div, resFileFor(t.type));
     }
     div.dataset.i = i;
     div.dataset.noClickSfx = '1';
@@ -2442,7 +2494,7 @@ function renderGrid(){
     div.style.height = TILE_H+'px';
     if(t && t.type === 'mountain' && t.snow) div.classList.add('snow');
     if(windHappinessPenalty(t) > 0) div.classList.add('wind-hit');
-    div.onclick = ()=> handleTileClick(i);
+    div.onclick = (event)=> handleTileClick(i, event);
     grid.appendChild(div);
   });
   const trucks = document.getElementById('trucks');
@@ -2504,6 +2556,67 @@ function showFloater(i, text, cls){
   setTimeout(()=> el.remove(), 1150);
 }
 
+function showInsufficientResources(event){
+  const el = document.createElement('div');
+  el.className = 'cursor-warning';
+  el.textContent = 'Insufficient resources';
+  const x = event && Number.isFinite(event.clientX) ? event.clientX : innerWidth / 2;
+  const y = event && Number.isFinite(event.clientY) ? event.clientY : innerHeight / 2;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1200);
+}
+
+function rejectInsufficient(event, logMessage){
+  showInsufficientResources(event);
+  if(logMessage) log(logMessage);
+  return true;
+}
+
+const residentNotificationQueue = [];
+let residentNotificationActive = false;
+function queueResidentNotification(resident, action){
+  residentNotificationQueue.push({ resident, action });
+  showNextResidentNotification();
+}
+function showNextResidentNotification(){
+  if(residentNotificationActive || residentNotificationQueue.length === 0) return;
+  residentNotificationActive = true;
+  const duration = residentNotificationQueue.length > 5 ? 4000 : 7000;
+  const item = residentNotificationQueue.shift();
+  const container = document.getElementById('residentNotifications');
+  const iconIndex = Math.floor(seededRand(item.resident.seed + 8) * AVATAR_EMOJI.length);
+  container.innerHTML = `<div class="resident-notification">
+    <div class="noti-icon">${AVATAR_EMOJI[iconIndex]}</div>
+    <div><div class="noti-name">${item.resident.name}</div><div class="noti-action">${item.action}</div></div>
+  </div>`;
+  setTimeout(()=>{
+    container.innerHTML = '';
+    residentNotificationActive = false;
+    showNextResidentNotification();
+  }, duration);
+}
+function maybeResidentAchievement(){
+  if(state.population < 1 || Math.random() > 0.035) return;
+  const globalIdx = Math.floor(Math.random() * state.population);
+  const resident = residentIdentity(globalIdx);
+  const employment = residentEmployment(globalIdx);
+  const employedActions = [
+    'received a promotion at work.',
+    'was recognized for excellent work.',
+    'completed professional training.',
+    'helped a neighbor during an emergency.'
+  ];
+  const generalActions = [
+    'volunteered at a community event.',
+    'won a local achievement award.',
+    'completed a personal goal.'
+  ];
+  const pool = employment.income > 0 ? employedActions : generalActions;
+  queueResidentNotification(resident, pool[Math.floor(Math.random() * pool.length)]);
+}
+
 // ---- Tile placement pop animation ----
 function popTile(i){
   const grid = document.getElementById('grid');
@@ -2551,6 +2664,36 @@ function seededRand(seed){
   return x - Math.floor(x);
 }
 
+function residentIdentity(globalIdx){
+  const seed = globalIdx * 61 + 19;
+  const first = FIRST_NAMES[Math.floor(seededRand(seed) * FIRST_NAMES.length)];
+  const last = LAST_NAMES[Math.floor(seededRand(seed + 1) * LAST_NAMES.length)];
+  return { name:`${first} ${last}`, seed };
+}
+
+function residentEmployment(globalIdx){
+  let start = 0;
+  for(const type of JOB_ORDER){
+    const slots = countMainType(type) * (JOB_SLOTS[type] || 0);
+    if(globalIdx < start + slots){
+      return { job:JOB_TITLES[type] || 'Worker', income:JOB_INCOME[type] || 1 };
+    }
+    start += slots;
+  }
+  if(departmentsUnlocked()){
+    if(globalIdx < start + MAYORS_OFFICE_EMPLOYEES){
+      const p = MAYOR_OFFICE_POSITIONS[globalIdx - start];
+      return { job:p.title, income:p.income };
+    }
+    start += MAYORS_OFFICE_EMPLOYEES;
+    if(globalIdx < start + MAINTENANCE_EMPLOYEES){
+      const p = MAINTENANCE_POSITIONS[globalIdx - start];
+      return { job:p.title, income:p.income };
+    }
+  }
+  return { job:'Unemployed', income:0 };
+}
+
 function houseResidents(i){
   const housingIndices = state.tiles.map((t,idx)=> (t && (t.type==='house' || t.type==='apartment')) ? idx : -1).filter(idx=>idx!==-1);
   const order = housingIndices.indexOf(i);
@@ -2561,36 +2704,36 @@ function houseResidents(i){
   const capacity = housingCapOf(state.tiles[i]);
   const occupied = Math.max(0, Math.min(capacity, state.population - before));
 
-  const jobs = jobsAvailable();
-  const farmJobs = countType('farm') * 1;
-  const factoryJobs = countType('factory') * 2;
-  const storeJobs = countType('store') * 2;
-
   const debuffPct = windHappinessPenalty(state.tiles[i]);
   const residents = [];
   for(let k=0;k<occupied;k++){
     const globalIdx = before + k;
-    let jobTitle = 'Unemployed';
-    if(globalIdx < farmJobs) jobTitle = 'Farmer';
-    else if(globalIdx < farmJobs + factoryJobs) jobTitle = 'Factory Worker';
-    else if(globalIdx < farmJobs + factoryJobs + storeJobs) jobTitle = 'Shopkeeper';
-
-    const seed = i * 37 + k * 13 + 7;
-    const first = FIRST_NAMES[Math.floor(seededRand(seed) * FIRST_NAMES.length)];
-    const last = LAST_NAMES[Math.floor(seededRand(seed + 1) * LAST_NAMES.length)];
+    const identity = residentIdentity(globalIdx);
+    const employment = residentEmployment(globalIdx);
+    const seed = identity.seed;
     const variance = Math.floor((seededRand(seed + 2) - 0.5) * 20);
     const personalHappiness = Math.max(0, Math.min(100, Math.floor(state.happiness * (1 - debuffPct/100)) + variance));
 
-    residents.push({ name: `${first} ${last}`, job: jobTitle, happiness: personalHappiness });
+    residents.push({ name:identity.name, job:employment.job, income:employment.income, happiness:personalHappiness });
   }
   return { occupied, residents, capacity };
 }
 
 // ---- Employees working at a specific production/service building ----
-const JOB_SLOTS = { farm:1, factory:2, store:2, restaurant:2, cinema:2, concerthall:3, fishery:2, mine:2, stadium:4, sawmill:2, quarry:2, winery:2 };
-const JOB_TITLES = { farm:'Farmer', factory:'Factory Worker', store:'Shopkeeper', restaurant:'Server', cinema:'Usher', concerthall:'Stagehand', fishery:'Fisher', mine:'Miner', stadium:'Stadium Staff', sawmill:'Lumberjack', quarry:'Quarry Worker', winery:'Vintner' };
+const JOB_SLOTS = { farm:1, factory:2, store:2, restaurant:2, cinema:2, concerthall:3, fishery:2, mine:2, stadium:4, sawmill:2, quarry:2, winery:2, hospital:5, hotel:4, resort:6, museum:3, aquarium:4 };
+const JOB_TITLES = { farm:'Farmer', factory:'Factory Worker', store:'Shopkeeper', restaurant:'Server', cinema:'Usher', concerthall:'Stagehand', fishery:'Fisher', mine:'Miner', stadium:'Stadium Staff', sawmill:'Lumberjack', quarry:'Quarry Worker', winery:'Vintner', hospital:'Healthcare Worker', hotel:'Hotel Staff', resort:'Resort Staff', museum:'Museum Guide', aquarium:'Aquarium Keeper' };
+const JOB_INCOME = { farm:2, factory:4, store:3, restaurant:3, cinema:3, concerthall:4, fishery:3, mine:4, stadium:4, sawmill:3, quarry:4, winery:4, hospital:5, hotel:4, resort:5, museum:4, aquarium:4 };
 // Order must mirror the accumulation order used in jobsAvailable().
-const JOB_ORDER = ['farm','factory','store','restaurant','cinema','concerthall','fishery','mine','stadium','sawmill','quarry','winery'];
+const JOB_ORDER = ['farm','factory','store','restaurant','cinema','concerthall','fishery','mine','stadium','sawmill','quarry','winery','hospital','hotel','resort','museum','aquarium'];
+const MAYOR_OFFICE_POSITIONS = [
+  { title:'Deputy Mayor', income:8 }, { title:'Festival Director', income:6 },
+  { title:'Public Affairs Officer', income:5 }, { title:'Office Administrator', income:4 }
+];
+const MAINTENANCE_POSITIONS = [
+  { title:'Maintenance Supervisor', income:6 }, { title:'Road Engineer', income:6 },
+  { title:'Repair Crew Lead', income:5 }, { title:'Road Technician', income:4 },
+  { title:'Maintenance Worker', income:3 }
+];
 
 function buildingEmployees(i){
   const t = state.tiles[i];
@@ -2620,12 +2763,12 @@ function buildingEmployees(i){
   const debuffPct = windHappinessPenalty(t);
   const employees = [];
   for(let k=0;k<filled;k++){
-    const seed = i * 53 + k * 17 + 11;
-    const first = FIRST_NAMES[Math.floor(seededRand(seed) * FIRST_NAMES.length)];
-    const last = LAST_NAMES[Math.floor(seededRand(seed + 1) * LAST_NAMES.length)];
+    const globalIdx = before + k;
+    const identity = residentIdentity(globalIdx);
+    const seed = identity.seed;
     const variance = Math.floor((seededRand(seed + 2) - 0.5) * 20);
     const happiness = Math.max(0, Math.min(100, Math.floor(state.happiness * (1 - debuffPct/100)) + variance));
-    employees.push({ name:`${first} ${last}`, job: JOB_TITLES[type] || 'Worker', happiness });
+    employees.push({ name:identity.name, job:JOB_TITLES[type] || 'Worker', income:JOB_INCOME[type] || 1, happiness });
   }
   return { filled, capacity, employees };
 }
@@ -2644,7 +2787,7 @@ function employeesModalSection(i){
           <div class="resident-avatar" style="background:${color}">${emoji}</div>
           <div class="resident-info">
             <div class="resident-name">${r.name}</div>
-            <div class="resident-job">${r.job}</div>
+            <div class="resident-job">${r.job} · ${r.income} 🪙/tick</div>
           </div>
           <div class="resident-happy">
             <div class="pct">${r.happiness}%</div>
@@ -2654,6 +2797,33 @@ function employeesModalSection(i){
     }).join('');
   }
   return html;
+}
+
+function departmentEmployees(kind){
+  const isMayor = kind === 'mayor';
+  const positions = isMayor ? MAYOR_OFFICE_POSITIONS : MAINTENANCE_POSITIONS;
+  const regularJobCapacity = JOB_ORDER.reduce((sum, type)=>sum + countMainType(type) * (JOB_SLOTS[type] || 0), 0);
+  const offset = regularJobCapacity + (isMayor ? 0 : MAYORS_OFFICE_EMPLOYEES);
+  const filled = Math.max(0, Math.min(positions.length, state.population - offset));
+  const employees = positions.slice(0, filled).map((position, idx)=>{
+    const identity = residentIdentity(offset + idx);
+    return { ...identity, ...position };
+  });
+  return { filled, capacity:positions.length, employees };
+}
+
+function departmentCard(title, kind){
+  const { filled, capacity, employees } = departmentEmployees(kind);
+  const rows = employees.length ? employees.map((r, idx)=>`
+    <div class="resident-row">
+      <div class="resident-avatar" style="background:${AVATAR_COLORS[(idx + (kind==='mayor'?0:4)) % AVATAR_COLORS.length]}">${AVATAR_EMOJI[(idx + (kind==='mayor'?0:4)) % AVATAR_EMOJI.length]}</div>
+      <div class="resident-info">
+        <div class="resident-name">${r.name}</div>
+        <div class="resident-job">${r.title} · ${r.income} 🪙/tick</div>
+      </div>
+    </div>`).join('') : `<div class="modal-empty">No employees assigned.</div>`;
+  return `<div class="department-card"><div class="department-name">${title}</div>
+    <div class="department-status">Employees ${filled}/${capacity}</div>${rows}</div>`;
 }
 
 function productionRate(i, type){
@@ -2772,7 +2942,7 @@ function showTooltip(x, y, info){
   }
   if(info.residents && info.residents.length){
     html += `<div class="tt-residents">${info.residents.map(r=>
-      `<div class="tt-resident"><div class="tt-resident-name">${r.name}</div><div class="tt-resident-meta">${r.job} · ${r.happiness}% happy</div></div>`
+      `<div class="tt-resident"><div class="tt-resident-name">${r.name}</div><div class="tt-resident-meta">${r.job} · ${r.income || 0} 🪙/tick · ${r.happiness}% happy</div></div>`
     ).join('')}</div>`;
   }
   tip.querySelector('.tt-body').innerHTML = html;
@@ -2858,7 +3028,7 @@ function openHouseModal(i){
           <div class="resident-avatar" style="background:${color}">${emoji}</div>
           <div class="resident-info">
             <div class="resident-name">${r.name}</div>
-            <div class="resident-job">${r.job}</div>
+            <div class="resident-job">${r.job} · ${r.income} 🪙/tick</div>
           </div>
           <div class="resident-happy">
             <div class="pct">${r.happiness}%</div>
@@ -2892,7 +3062,7 @@ function openApartmentModal(i){
           <div class="resident-avatar" style="background:${color}">${emoji}</div>
           <div class="resident-info">
             <div class="resident-name">${r.name}</div>
-            <div class="resident-job">${r.job}</div>
+            <div class="resident-job">${r.job} · ${r.income} 🪙/tick</div>
           </div>
           <div class="resident-happy">
             <div class="pct">${r.happiness}%</div>
@@ -2963,7 +3133,8 @@ function openFarmModal(i){
     <div class="modal-stat-row"><span>Production rate</span><span class="val">${rate}%</span></div>
     <div class="modal-stat-row"><span>Jobs</span><span class="val">+1 job</span></div>
     <div class="modal-section-label">Crops</div>
-    <div class="modal-products">${products}</div>`;
+    <div class="modal-products">${products}</div>
+    ${employeesModalSection(i)}`;
   openModal('🌾 Farm', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
 }
 
@@ -3007,7 +3178,8 @@ function openCinemaModal(i){
   const body = `
     <div class="modal-stat-row"><span>Happiness</span><span class="val">+10% adjacent area</span></div>
     <div class="modal-stat-row"><span>Per visit</span><span class="val">+5% 😊</span></div>
-    <div class="modal-stat-row"><span>Jobs</span><span class="val">+2 jobs</span></div>`;
+    <div class="modal-stat-row"><span>Jobs</span><span class="val">+2 jobs</span></div>
+    ${employeesModalSection(i)}`;
   openModal('🎬 Movie Theater', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
 }
 
@@ -3017,7 +3189,8 @@ function openRestaurantModal(i){
   const body = `
     <div class="modal-stat-row"><span>Cuisine</span><span class="val">${cuisine}</span></div>
     <div class="modal-stat-row"><span>Jobs</span><span class="val">+2 jobs</span></div>
-    <div class="modal-stat-row"><span>Happiness</span><span class="val">+happiness</span></div>`;
+    <div class="modal-stat-row"><span>Happiness</span><span class="val">+happiness</span></div>
+    ${employeesModalSection(i)}`;
   openModal('🍽️ Restaurant', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
 }
 
@@ -3033,8 +3206,24 @@ function openConcertHallModal(i){
     ${statusRow}
     <div class="modal-stat-row"><span>Per show</span><span class="val">+20% 😊</span></div>
     <div class="modal-stat-row"><span>Jobs</span><span class="val">+3 jobs</span></div>
-    <div class="modal-stat-row"><span>Footprint</span><span class="val">2 tiles</span></div>`;
+    <div class="modal-stat-row"><span>Footprint</span><span class="val">2 tiles</span></div>
+    ${employeesModalSection(i)}`;
   openModal('🎵 Concert Hall', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
+}
+
+function openGenericBuildingModal(i){
+  const t = state.tiles[i];
+  const b = t && BUILDINGS[t.type];
+  if(!b) return;
+  const tourism = TOURISM_TYPES.includes(t.type);
+  const multiplier = TOURISM_SEASON_MULTIPLIER[state.season || 0];
+  const body = `
+    <div class="modal-stat-row"><span>Purpose</span><span class="val">${b.desc}</span></div>
+    <div class="modal-stat-row"><span>Jobs</span><span class="val">+${JOB_SLOTS[t.type] || 0} jobs</span></div>
+    ${tourism ? `<div class="modal-stat-row"><span>Tourism income</span><span class="val">${((TOURISM_VALUE[t.type] || 0) * multiplier).toFixed(1)} 🪙/tick</span></div>` : ''}
+    ${employeesModalSection(i)}`;
+  openModal(`${BUILD_ICONS[t.type] || '🏢'} ${b.name}`, body,
+    `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
 }
 
 function openTownHallModal(i){
@@ -3051,16 +3240,8 @@ function openTownHallModal(i){
   const requirementsHtml = reqs ? rows : `<div class="modal-empty">Max level ${TOWN_HALL_MAX_LEVEL} reached!</div>`;
   const departmentsHtml = `
     <div class="modal-section-label">Departments</div>
-    <div class="department-card">
-      <div class="department-name">Mayor's Office</div>
-      <div class="department-detail">Needs ${MAYORS_OFFICE_EMPLOYEES} employees. Holds one Town Festival each year at the Stadium for ${FESTIVAL_COST} coins.</div>
-      <div class="department-status">${mayorsOfficeStaffed() ? '✅ Staffed' : '⬜ Needs employees'}</div>
-    </div>
-    <div class="department-card">
-      <div class="department-name">Town Maintenance</div>
-      <div class="department-detail">Needs ${MAINTENANCE_EMPLOYEES} employees. Restores roads destroyed by events after a 10-second arrival and repair time.</div>
-      <div class="department-status">${maintenanceStaffed() ? '✅ Staffed' : '⬜ Needs employees'}</div>
-    </div>`;
+    ${departmentCard("Mayor's Office", 'mayor')}
+    ${departmentCard('Town Maintenance', 'maintenance')}`;
   const body = departmentsUnlocked()
     ? `<div class="townhall-columns"><div><div class="modal-section-label">${reqs ? 'Requirements for Level '+nextLevel : 'Upgrade'}</div>${requirementsHtml}</div><div>${departmentsHtml}</div></div>`
     : requirementsHtml;
@@ -3072,7 +3253,7 @@ function openTownHallModal(i){
     body, footer, departmentsUnlocked());
 }
 
-function handleTileClick(i){
+function handleTileClick(i, event){
   if(!selectedBuild){
     const current = state.tiles[i];
     if(current){
@@ -3085,6 +3266,7 @@ function handleTileClick(i){
       else if(current.type === 'cinema') openCinemaModal(i);
       else if(current.type === 'restaurant') openRestaurantModal(i);
       else if(current.type === 'concerthall') openConcertHallModal(i);
+      else if(JOB_SLOTS[current.type]) openGenericBuildingModal(i);
     }
     return;
   }
@@ -3098,7 +3280,7 @@ function handleTileClick(i){
     }
     const b = BUILDINGS.bridge;
     for(const [res, amt] of Object.entries(b.cost)){
-      if(state[res] < amt){ log(`Not enough ${res} to build a bridge.`); return; }
+      if(state[res] < amt){ rejectInsufficient(event, `Not enough ${res} to build a bridge.`); return; }
     }
     for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
     state.tiles[i] = { type:'bridge' };
@@ -3114,7 +3296,7 @@ function handleTileClick(i){
     if(current){ log("A river needs clear, empty land."); return; }
     const b = BUILDINGS.river;
     for(const [res, amt] of Object.entries(b.cost)){
-      if(state[res] < amt){ log(`Not enough ${res} to carve a river.`); return; }
+      if(state[res] < amt){ rejectInsufficient(event, `Not enough ${res} to carve a river.`); return; }
     }
     for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
     state.tiles[i] = { type:'river', terrain:true };
@@ -3132,7 +3314,7 @@ function handleTileClick(i){
     if(current){ log("A mountain needs clear, empty land."); return; }
     const b = BUILDINGS.mountain;
     for(const [res, amt] of Object.entries(b.cost)){
-      if(state[res] < amt){ log(`Not enough ${res} to raise a mountain.`); return; }
+      if(state[res] < amt){ rejectInsufficient(event, `Not enough ${res} to raise a mountain.`); return; }
     }
     for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
     const peak = 28 + Math.floor(Math.random()*30);
@@ -3154,7 +3336,7 @@ function handleTileClick(i){
     }
     const b = BUILDINGS.clearmountain;
     for(const [res, amt] of Object.entries(b.cost)){
-      if(state[res] < amt){ log(`Not enough ${res} to clear the mountain.`); return; }
+      if(state[res] < amt){ rejectInsufficient(event, `Not enough ${res} to clear the mountain.`); return; }
     }
     for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
     state.tiles[i] = null;
@@ -3175,7 +3357,7 @@ function handleTileClick(i){
     }
     const b = BUILDINGS.clearriver;
     for(const [res, amt] of Object.entries(b.cost)){
-      if(state[res] < amt){ log(`Not enough ${res} to clear the river.`); return; }
+      if(state[res] < amt){ rejectInsufficient(event, `Not enough ${res} to clear the river.`); return; }
     }
     for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
     state.tiles[i] = null;
@@ -3223,7 +3405,7 @@ function handleTileClick(i){
     if(tj === 'edge' || tj){ log("Concert Hall needs two clear tiles side by side."); return; }
     const b = BUILDINGS.concerthall;
     for(const [res, amt] of Object.entries(b.cost)){
-      if(state[res] < amt){ log(`Not enough ${res} to build a concert hall.`); return; }
+      if(state[res] < amt){ rejectInsufficient(event, `Not enough ${res} to build a concert hall.`); return; }
     }
     for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
     state.tiles[i] = { type:'concerthall', pair:j };
@@ -3268,7 +3450,7 @@ function handleTileClick(i){
 
   const b = BUILDINGS[selectedBuild];
   for(const [res, amt] of Object.entries(b.cost)){
-    if(state[res] < amt){ log(`Not enough ${res} to build a ${b.name.toLowerCase()}.`); return; }
+    if(state[res] < amt){ rejectInsufficient(event, `Not enough ${res} to build a ${b.name.toLowerCase()}.`); return; }
   }
   for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
   state.tiles[i] = { type: selectedBuild };
@@ -3373,6 +3555,10 @@ function gameTick(){
   const sawmills = countType('sawmill');
   const quarries = countType('quarry');
   const wineries = countType('winery');
+  const hospitals = countType('hospital');
+  const tourismPlots = TOURISM_TYPES.reduce((sum, type)=>sum + countType(type), 0);
+  const tourismMultiplier = TOURISM_SEASON_MULTIPLIER[state.season || 0];
+  state.tourists = Math.round(tourismPlots * 4 * tourismMultiplier);
   const employed = Math.min(jobs, state.population);
   const unemployed = Math.max(0, state.population - jobs);
 
@@ -3396,7 +3582,8 @@ function gameTick(){
   const factoryWorkers = Math.min(employed, activeFactories*2);
   const mineWorkers = Math.min(employed, activeMines*2);
   const wineryWorkers = Math.min(employed, activeWineries*2);
-  const coinsProduced = factoryWorkers * 2 + mineWorkers * 2 + wineryWorkers * 2;
+  const tourismIncome = TOURISM_TYPES.reduce((sum, type)=>sum + countType(type) * (TOURISM_VALUE[type] || 0), 0) * tourismMultiplier;
+  const coinsProduced = factoryWorkers * 2 + mineWorkers * 2 + wineryWorkers * 2 + tourismIncome;
   const upkeep = countType('house') * 0.5 + factories * 0.5 + mines * 0.5 + wineries * 0.5;
   state.coins += coinsProduced - upkeep;
   if(state.coins < 0) state.coins = 0;
@@ -3413,6 +3600,7 @@ function gameTick(){
   happinessDelta += clockTowers * 1.2; // town-wide happiness aura
   happinessDelta += statues * 0.4; // cheap decoration, small happiness
   happinessDelta += wineries * 1; // fine wine keeps everyone cheerful
+  happinessDelta += hospitals * 1.5;
   happinessDelta -= unemployed * 2;
   happinessDelta -= starving ? 8 : 0;
   happinessDelta += (state.food > state.population * 5) ? 1 : 0;
@@ -3443,6 +3631,11 @@ function gameTick(){
     }
   });
 
+  if(tourismIncome > 0 && state.tick % 10 === 0){
+    const tourismTiles = state.tiles.map((t,i)=>t && TOURISM_TYPES.includes(t.type) ? i : -1).filter(i=>i>=0);
+    if(tourismTiles.length) showFloater(tourismTiles[Math.floor(Math.random()*tourismTiles.length)], `+${Math.round(tourismIncome)} 🪙 tourism`, 'good');
+  }
+
   // idle smoke puffs from active factories
   state.tiles.forEach((t, i)=>{
     if(t && t.type === 'factory' && Math.random() < 0.5) spawnSmoke(i);
@@ -3463,6 +3656,7 @@ function gameTick(){
   maybeTriggerEvent();
   expireQuests();
   maybeGenerateQuest();
+  maybeResidentAchievement();
   save();
 }
 
