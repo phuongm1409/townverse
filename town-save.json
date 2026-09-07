@@ -1,11 +1,11 @@
 {
-  "coins": 183025.49999999965,
-  "food": 832,
-  "wood": 4561.5,
-  "population": 110,
-  "housingCap": 308,
+  "coins": 202261.49999999965,
+  "food": 1004,
+  "wood": 4688.5,
+  "population": 125,
+  "housingCap": 458,
   "happiness": 100,
-  "ecoScore": 5,
+  "ecoScore": -10,
   "tiles": [
     {
       "type": "mountain",
@@ -28,14 +28,14 @@
     null,
     {
       "type": "farm",
-      "growth": 1
+      "growth": 3.5
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 3.5
     },
     {
       "type": "factory"
@@ -51,15 +51,15 @@
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 4.5
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 4.5
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 3.5
     },
     {
       "type": "park",
@@ -68,7 +68,7 @@
     {
       "type": "concerthall",
       "pair": 15,
-      "_upcomingShow": "BUS concert"
+      "_liveShow": "BUS concert"
     },
     {
       "type": "concerthall",
@@ -100,36 +100,36 @@
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 0.5
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 3.5
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 0.5
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 2.5
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 3.5
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 3.5
     },
     {
       "type": "road"
@@ -187,7 +187,7 @@
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 3.5
     },
     {
       "type": "store",
@@ -224,14 +224,14 @@
     null,
     {
       "type": "farm",
-      "growth": 4
+      "growth": 1.5
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 0.5
     },
     {
       "type": "factory"
@@ -255,18 +255,18 @@
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 3.5
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 1.5
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 3.5
     },
     {
       "type": "hotel"
@@ -284,29 +284,29 @@
     },
     {
       "type": "farm",
-      "growth": 0,
+      "growth": 2.5,
       "_windUntil": 913,
       "_windPct": 20,
       "_windPause": true
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 1.5
     },
     {
       "type": "farm",
-      "growth": 4,
+      "growth": 1.5,
       "_windUntil": 592,
       "_windPct": 20,
       "_windPause": true
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 1.5
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 2.5
     },
     {
       "type": "store",
@@ -321,7 +321,7 @@
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 2.5
     },
     {
       "type": "road"
@@ -331,7 +331,7 @@
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 3.5
     },
     {
       "type": "road"
@@ -342,7 +342,10 @@
       "_windPct": 20,
       "_windPause": false
     },
-    null,
+    {
+      "type": "apartment",
+      "level": 3
+    },
     {
       "type": "river",
       "terrain": true
@@ -383,25 +386,25 @@
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 2.5
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 1.5
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 3.5
     },
     {
       "type": "road"
     },
     {
-      "type": "farm",
-      "growth": 4
+      "type": "apartment",
+      "level": 3
     },
     {
       "type": "river",
@@ -467,10 +470,12 @@
       "type": "store",
       "storeType": "bookstore"
     },
-    null,
     {
-      "type": "farm",
-      "growth": 3
+      "type": "road"
+    },
+    {
+      "type": "apartment",
+      "level": 3
     },
     {
       "type": "river",
@@ -487,26 +492,26 @@
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 4.5
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 4.5
     },
     {
       "type": "cinema"
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 4.5
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 4.5
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 4.5
     },
     {
       "type": "road",
@@ -642,14 +647,14 @@
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 0.5
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 4.5
     },
     {
       "type": "road"
@@ -668,7 +673,10 @@
     },
     {
       "type": "park",
-      "variant": "p2"
+      "variant": "p2",
+      "_windUntil": 1225,
+      "_windPct": 20,
+      "_windPause": false
     },
     {
       "type": "road"
@@ -717,7 +725,7 @@
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 4.5
     },
     {
       "type": "road",
@@ -742,15 +750,18 @@
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 4.5,
+      "_windUntil": 1207,
+      "_windPct": 20,
+      "_windPause": true
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 4.5
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 4.5
     },
     {
       "type": "road"
@@ -773,66 +784,29 @@
     {
       "type": "hospital"
     },
-    {
-      "type": "mountain",
-      "terrain": true,
-      "peak": 49,
-      "snow": true
-    }
+    null
   ],
   "quests": [
     {
-      "id": 199,
-      "name": "Tobias",
-      "tileIndex": 165,
-      "need": {
-        "res": "food",
-        "amount": 20
-      },
-      "reward": {
-        "type": "coins",
-        "amount": 42
-      },
-      "expiresAtTick": 1211,
-      "createdAtTick": 1187,
-      "duration": 24
-    },
-    {
-      "id": 200,
-      "name": "Gus",
-      "tileIndex": 163,
-      "need": {
-        "res": "coins",
-        "amount": 39
-      },
-      "reward": {
-        "type": "happiness",
-        "amount": 4
-      },
-      "expiresAtTick": 1213,
-      "createdAtTick": 1188,
-      "duration": 25
-    },
-    {
-      "id": 201,
-      "name": "Ines",
+      "id": 213,
+      "name": "Cyrus",
       "tileIndex": 97,
       "need": {
-        "res": "wood",
-        "amount": 13
+        "res": "food",
+        "amount": 15
       },
       "reward": {
         "type": "coins",
-        "amount": 31
+        "amount": 34
       },
-      "expiresAtTick": 1217,
-      "createdAtTick": 1194,
-      "duration": 23
+      "expiresAtTick": 1270,
+      "createdAtTick": 1249,
+      "duration": 21
     }
   ],
-  "nextQuestId": 202,
+  "nextQuestId": 214,
   "mayorName": "Alecia",
-  "townHallLevel": 6,
+  "townHallLevel": 7,
   "destructionHistory": {
     "22": "Farm was destroyed by Flood.",
     "23": "Farm was destroyed by Flood.",
@@ -846,6 +820,7 @@
     "77": "Farm was destroyed by Fire.",
     "91": "Road was destroyed by Fire.",
     "93": "Road was destroyed by Fire.",
+    "103": "Farm was destroyed by Flood.",
     "119": "Road was destroyed by Fire.",
     "126": "Restaurant was destroyed by Fire.",
     "132": "Road was destroyed by Fire.",
@@ -879,8 +854,8 @@
     "60": 50
   },
   "pendingReconstructions": [],
-  "tourists": 24,
-  "tick": 1197,
-  "season": 1,
-  "winterStormUntil": null
+  "tourists": 5,
+  "tick": 1249,
+  "season": 3,
+  "winterStormUntil": 1266
 }
