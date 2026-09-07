@@ -1,11 +1,11 @@
 {
-  "coins": 20734,
-  "food": 1203,
-  "wood": 1.5,
-  "population": 21,
-  "housingCap": 56,
-  "happiness": 0,
-  "ecoScore": 1,
+  "coins": 23046.5,
+  "food": 1235,
+  "wood": 14,
+  "population": 27,
+  "housingCap": 71,
+  "happiness": 100,
+  "ecoScore": 4,
   "tiles": [
     {
       "type": "mountain",
@@ -148,8 +148,7 @@
       "terrain": true
     },
     {
-      "type": "farm",
-      "growth": 2
+      "type": "sawmill"
     },
     {
       "type": "farm",
@@ -194,8 +193,7 @@
       "terrain": true
     },
     {
-      "type": "farm",
-      "growth": 1
+      "type": "sawmill"
     },
     {
       "type": "road"
@@ -240,8 +238,7 @@
       "terrain": true
     },
     {
-      "type": "farm",
-      "growth": 1
+      "type": "sawmill"
     },
     {
       "type": "road"
@@ -286,10 +283,11 @@
       "type": "river",
       "terrain": true
     },
-    null,
     {
-      "type": "farm",
-      "growth": 1
+      "type": "fishery"
+    },
+    {
+      "type": "road"
     },
     {
       "type": "road"
@@ -322,11 +320,15 @@
       "type": "river",
       "terrain": true
     },
-    null,
-    null,
     {
-      "type": "farm",
-      "growth": 1
+      "type": "fishery"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "park",
+      "variant": "p2"
     },
     {
       "type": "road"
@@ -370,12 +372,23 @@
       "type": "river",
       "terrain": true
     },
+    {
+      "type": "fishery"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
     null,
-    null,
-    null,
-    null,
-    null,
-    null,
+    {
+      "type": "store",
+      "storeType": "fashion"
+    },
     {
       "type": "store",
       "storeType": "supermarket"
@@ -447,7 +460,7 @@
     null,
     {
       "type": "apartment",
-      "level": 1
+      "level": 2
     },
     {
       "type": "road"
@@ -477,55 +490,39 @@
   ],
   "quests": [
     {
-      "id": 48,
-      "name": "Leo",
-      "tileIndex": 128,
+      "id": 52,
+      "name": "Sana",
+      "tileIndex": 130,
       "need": {
         "res": "wood",
+        "amount": 10
+      },
+      "reward": {
+        "type": "coins",
+        "amount": 26
+      },
+      "expiresAtTick": 349,
+      "createdAtTick": 329,
+      "duration": 20
+    },
+    {
+      "id": 54,
+      "name": "Finn",
+      "tileIndex": 129,
+      "need": {
+        "res": "wood",
+        "amount": 13
+      },
+      "reward": {
+        "type": "happiness",
         "amount": 8
       },
-      "reward": {
-        "type": "coins",
-        "amount": 23
-      },
-      "expiresAtTick": 313,
-      "createdAtTick": 292,
-      "duration": 21
-    },
-    {
-      "id": 49,
-      "name": "Nadia",
-      "tileIndex": 164,
-      "need": {
-        "res": "wood",
-        "amount": 7
-      },
-      "reward": {
-        "type": "coins",
-        "amount": 21
-      },
-      "expiresAtTick": 321,
-      "createdAtTick": 297,
-      "duration": 24
-    },
-    {
-      "id": 50,
-      "name": "Oskar",
-      "tileIndex": 180,
-      "need": {
-        "res": "food",
-        "amount": 21
-      },
-      "reward": {
-        "type": "coins",
-        "amount": 44
-      },
-      "expiresAtTick": 319,
-      "createdAtTick": 301,
-      "duration": 18
+      "expiresAtTick": 350,
+      "createdAtTick": 335,
+      "duration": 15
     }
   ],
-  "nextQuestId": 51,
+  "nextQuestId": 57,
   "mayorName": "Alecia",
   "townHallLevel": 2,
   "destructionHistory": {
@@ -544,11 +541,12 @@
     "8": 25,
     "9": 25,
     "12": 25,
+    "17": 25,
     "21": 25
   },
   "pendingReconstructions": [],
   "tourists": 0,
-  "tick": 301,
-  "season": 3,
-  "winterStormUntil": 309
+  "tick": 340,
+  "season": 0,
+  "winterStormUntil": null
 }
