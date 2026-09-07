@@ -1721,6 +1721,11 @@ const CONCERT_SHOWS = [
   'ONG SEONGWU fanmeeting',
   'PERSES concert'
 ];
+function concertShowForTick(tick){
+  if(!CONCERT_SHOWS.length) return 'Live show';
+  const cycle = Math.floor(Math.max(0, tick) / CONCERT_INTERVAL);
+  return CONCERT_SHOWS[cycle % CONCERT_SHOWS.length];
+}
 
 const LEVEL_REQS = [
   null, // level 1 has no requirement (starting level)
@@ -1770,11 +1775,12 @@ function tryResImage(url, onOk){
   img.onerror = ()=>{ _resCache[url] = false; };
   img.src = url;
 }
-function applyResImage(div, url, rot){
+function applyResImage(div, url, rot, options){
   tryResImage(url, ()=>{
     div.style.backgroundImage = `url("${url}")`;
-    div.style.backgroundSize = 'cover';
-    div.style.backgroundPosition = 'center';
+    div.style.backgroundSize = options && options.size ? options.size : 'cover';
+    div.style.backgroundPosition = options && options.position ? options.position : 'center';
+    div.style.backgroundRepeat = 'no-repeat';
     if(rot){ div.style.setProperty('--res-rot', rot+'deg'); }
   });
 }
@@ -2608,12 +2614,15 @@ function renderGrid(){
     } else if(t && t.type === 'restaurant'){
       applyResImage(div, resFileFor('restaurant'));
     } else if(t && t.type === 'concerthall'){
-      applyResImage(div, resFileFor('concerthall'));
+      applyResImage(div, resFileFor('concerthall'), null, {
+        size:'200% 100%',
+        position:t.role === 'secondary' ? 'right center' : 'left center'
+      });
       if(t.role !== 'secondary'){
         const overlay = document.createElement('div');
         overlay.className = 'concerthall-overlay';
         overlay.style.width = (TILE_W*2)+'px';
-        overlay.innerHTML = `<span class="concerthall-icon">🎵</span><span class="concerthall-label">Concert Hall</span>`;
+        overlay.innerHTML = `<span class="concerthall-icon">🎵</span><span class="concerthall-label">${t._liveShow || 'Concert Hall'}</span>`;
         div.appendChild(overlay);
       }
     } else if(t && resFileFor(t.type)){
@@ -2659,6 +2668,13 @@ function renderConcertAnnouncements(){
   mainIndicesOfType('concerthall').forEach(i=>{
     const t = state.tiles[i];
     if(!t) return;
+    const cyclePos = state.tick % CONCERT_INTERVAL;
+    if(cyclePos < CONCERT_DURATION && !t._liveShow){
+      t._liveShow = concertShowForTick(state.tick);
+    }
+    if(cyclePos >= CONCERT_INTERVAL - CONCERT_ANNOUNCE_TICKS && !t._upcomingShow){
+      t._upcomingShow = concertShowForTick(state.tick + CONCERT_ANNOUNCE_TICKS);
+    }
     const showName = t._liveShow || t._upcomingShow;
     if(!showName) return;
     const r = Math.floor(i/COLS), c = i % COLS;
@@ -3069,7 +3085,8 @@ function tileInfo(t, i){
     const status = cyclePos < CONCERT_DURATION
       ? `Live now (ends in ${CONCERT_DURATION - cyclePos} ticks)`
       : `Next concert in ${CONCERT_INTERVAL - cyclePos} ticks`;
-    return { name:'Concert Hall', facts:[status, '+20% happiness per show', '2 tiles · 3 jobs'] };
+    const showName = t._liveShow || (cyclePos < CONCERT_DURATION ? concertShowForTick(state.tick) : t._upcomingShow);
+    return { name:'Concert Hall', sub:showName || undefined, facts:[status, '+20% happiness per show', '2 tiles · 3 jobs'] };
   }
 
   const b = BUILDINGS[t.type];
@@ -3354,7 +3371,7 @@ function openConcertHallModal(i){
   const cyclePos = state.tick % CONCERT_INTERVAL;
   const t = state.tiles[i];
   const statusRow = cyclePos < CONCERT_DURATION
-    ? `<div class="modal-stat-row"><span>Now playing</span><span class="val">${t && t._liveShow ? t._liveShow : 'Live show'}</span></div>
+    ? `<div class="modal-stat-row"><span>Now playing</span><span class="val">${t && t._liveShow ? t._liveShow : concertShowForTick(state.tick)}</span></div>
        <div class="modal-stat-row"><span>Ends in</span><span class="val">${CONCERT_DURATION - cyclePos} ticks</span></div>`
     : `<div class="modal-stat-row"><span>Next show</span><span class="val">in ${CONCERT_INTERVAL - cyclePos} ticks</span></div>`;
   const body = `
@@ -3656,14 +3673,14 @@ function gameTick(){
     mainIndicesOfType('concerthall').forEach(i=>{
       const t = state.tiles[i];
       if(!t) return;
-      t._upcomingShow = CONCERT_SHOWS[Math.floor(Math.random()*CONCERT_SHOWS.length)];
+      t._upcomingShow = concertShowForTick(state.tick + CONCERT_ANNOUNCE_TICKS);
       log(`🎫 "${t._upcomingShow}" is coming to the Concert Hall in ${CONCERT_ANNOUNCE_TICKS} ticks!`);
     });
   } else if(concertCyclePos === 0){
     mainIndicesOfType('concerthall').forEach(i=>{
       const t = state.tiles[i];
       if(!t) return;
-      const showName = t._upcomingShow || CONCERT_SHOWS[Math.floor(Math.random()*CONCERT_SHOWS.length)];
+      const showName = t._upcomingShow || concertShowForTick(state.tick);
       t._liveShow = showName;
       delete t._upcomingShow;
       state.happiness = Math.min(100, state.happiness + 20);
