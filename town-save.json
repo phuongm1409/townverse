@@ -1,0 +1,465 @@
+{
+  "coins": 6287,
+  "food": 171,
+  "wood": 29,
+  "population": 16,
+  "housingCap": 28,
+  "happiness": 0,
+  "ecoScore": 3,
+  "tiles": [
+    {
+      "type": "mountain",
+      "terrain": true,
+      "peak": 38,
+      "snow": false
+    },
+    {
+      "type": "mountain",
+      "terrain": true,
+      "peak": 54,
+      "snow": true
+    },
+    {
+      "type": "mountain",
+      "terrain": true,
+      "peak": 44,
+      "snow": false
+    },
+    null,
+    {
+      "type": "river",
+      "terrain": true
+    },
+    {
+      "type": "river",
+      "terrain": true
+    },
+    {
+      "type": "river",
+      "terrain": true
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "mountain",
+      "terrain": true,
+      "peak": 57,
+      "snow": true
+    },
+    {
+      "type": "mountain",
+      "terrain": true,
+      "peak": 49,
+      "snow": true
+    },
+    null,
+    {
+      "type": "river",
+      "terrain": true
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "mountain",
+      "terrain": true,
+      "peak": 47,
+      "snow": true
+    },
+    {
+      "type": "mountain",
+      "terrain": true,
+      "peak": 47,
+      "snow": true
+    },
+    null,
+    null,
+    {
+      "type": "river",
+      "terrain": true
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "mountain",
+      "terrain": true,
+      "peak": 40,
+      "snow": false
+    },
+    {
+      "type": "mountain",
+      "terrain": true,
+      "peak": 39,
+      "snow": false
+    },
+    null,
+    {
+      "type": "river",
+      "terrain": true
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "river",
+      "terrain": true
+    },
+    null,
+    {
+      "type": "farm",
+      "growth": 2
+    },
+    {
+      "type": "farm",
+      "growth": 1
+    },
+    {
+      "type": "farm",
+      "growth": 1
+    },
+    {
+      "type": "farm",
+      "growth": 1
+    },
+    {
+      "type": "farm",
+      "growth": 1
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "river",
+      "terrain": true
+    },
+    null,
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road",
+      "_windUntil": 111,
+      "_windPct": 20,
+      "_windPause": false
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "park",
+      "variant": "p1"
+    },
+    {
+      "type": "house"
+    },
+    {
+      "type": "house"
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "river",
+      "terrain": true
+    },
+    {
+      "type": "river",
+      "terrain": true
+    },
+    {
+      "type": "river",
+      "terrain": true
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "factory"
+    },
+    {
+      "type": "factory"
+    },
+    {
+      "type": "factory"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road",
+      "_windUntil": 124,
+      "_windPct": 20,
+      "_windPause": false
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road",
+      "_windUntil": 95,
+      "_windPct": 20,
+      "_windPause": false
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "river",
+      "terrain": true
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "house"
+    },
+    {
+      "type": "house"
+    },
+    {
+      "type": "house"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "townhall"
+    },
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "river",
+      "terrain": true
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "river",
+      "terrain": true
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "road"
+    },
+    {
+      "type": "house"
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "river",
+      "terrain": true
+    },
+    {
+      "type": "river",
+      "terrain": true
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "road",
+      "_windUntil": 104,
+      "_windPct": 20,
+      "_windPause": false
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "river",
+      "terrain": true
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road",
+      "_snowBlockUntil": 155
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "mountain",
+      "terrain": true,
+      "peak": 49,
+      "snow": true
+    }
+  ],
+  "quests": [
+    {
+      "id": 22,
+      "name": "Sana",
+      "tileIndex": 96,
+      "need": {
+        "res": "wood",
+        "amount": 12
+      },
+      "reward": {
+        "type": "coins",
+        "amount": 29
+      },
+      "expiresAtTick": 170,
+      "createdAtTick": 145,
+      "duration": 25
+    },
+    {
+      "id": 23,
+      "name": "Elena",
+      "tileIndex": 96,
+      "need": {
+        "res": "food",
+        "amount": 20
+      },
+      "reward": {
+        "type": "happiness",
+        "amount": 7
+      },
+      "expiresAtTick": 165,
+      "createdAtTick": 150,
+      "duration": 15
+    }
+  ],
+  "nextQuestId": 24,
+  "mayorName": "Mayor",
+  "townHallLevel": 1,
+  "destructionHistory": {
+    "73": "Farm was destroyed by Fire.",
+    "91": "Road was destroyed by Fire.",
+    "162": "Road was destroyed by Fire."
+  },
+  "residentHappinessPenalties": {
+    "0": 25
+  },
+  "pendingReconstructions": [],
+  "tourists": 0,
+  "tick": 150,
+  "season": 3,
+  "winterStormUntil": null
+}
