@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Pixel Town</title>
+<title>Townverse</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
@@ -56,10 +56,13 @@
     from{ background-position:0 0; }
     to{ background-position:160px 160px; }
   }
+  #gameViewport{
+    position:relative; width:100%; height:100%; max-width:1180px; max-height:800px;
+    zoom:66.6667%;
+  }
   .gameWrap{
     position:relative; display:flex; flex-direction:row; width:100%; height:100%;
     max-width:1180px; max-height:800px;
-    transform:scale(0.6666667); transform-origin:center center;
     border-radius:20px; overflow:hidden;
     box-shadow: 0 10px 28px rgba(27,58,92,.14), 0 2px 6px rgba(27,58,92,.08);
     background: linear-gradient(180deg, #7fc9f0 0%, #bfe6fb 45%, #eaf7ff 100%);
@@ -871,6 +874,7 @@
 </head>
 <body>
 
+<div id="gameViewport">
 <div class="padControls">
   <button class="padBtn publish" id="ghPublishBtn" title="Publish save to GitHub">⬆️ Publish</button>
   <button class="padBtn" id="ghSettingsBtn" title="GitHub settings">⚙️</button>
@@ -974,6 +978,7 @@
 <div id="logPanel">
   <h2>Town Log</h2>
   <div id="log"></div>
+</div>
 </div>
 
 <script>
@@ -1509,8 +1514,14 @@ function destroyLotByEvent(i, eventName){
   const tile = state.tiles[i];
   if(!tile) return;
   const name = destroyedBuildingName(tile);
-  state.destructionHistory[i] = `${name} was destroyed by ${eventName}.`;
-  state.tiles[i] = null;
+  const destroyedIndices = [i];
+  if(tile.pair != null && state.tiles[tile.pair] && state.tiles[tile.pair].type === tile.type){
+    destroyedIndices.push(tile.pair);
+  }
+  destroyedIndices.forEach(idx => {
+    state.destructionHistory[idx] = `${name} was destroyed by ${eventName}.`;
+    state.tiles[idx] = null;
+  });
   if(tile.type === 'road' && maintenanceStaffed()){
     log(`Town Maintenance is heading to the destroyed road. Arrival in 10 seconds.`);
     setTimeout(()=>{
