@@ -1,10 +1,10 @@
 {
-  "coins": 7420.5,
-  "food": 140,
-  "wood": 16.5,
-  "population": 14,
+  "coins": 10832,
+  "food": 68,
+  "wood": 9,
+  "population": 20,
   "housingCap": 36,
-  "happiness": 24.199999999999996,
+  "happiness": 0,
   "ecoScore": 9,
   "tiles": [
     {
@@ -145,7 +145,10 @@
       "type": "river",
       "terrain": true
     },
-    null,
+    {
+      "type": "farm",
+      "growth": 2
+    },
     {
       "type": "farm",
       "growth": 1
@@ -180,7 +183,10 @@
       "type": "river",
       "terrain": true
     },
-    null,
+    {
+      "type": "farm",
+      "growth": 1
+    },
     {
       "type": "road"
     },
@@ -290,9 +296,7 @@
     {
       "type": "road"
     },
-    {
-      "type": "townhall"
-    },
+    null,
     null,
     null,
     null,
@@ -415,9 +419,7 @@
     {
       "type": "road"
     },
-    {
-      "type": "road"
-    },
+    null,
     {
       "type": "road"
     },
@@ -431,38 +433,27 @@
       "snow": true
     }
   ],
-  "quests": [
-    {
-      "id": 25,
-      "name": "Priya",
-      "tileIndex": 128,
-      "need": {
-        "res": "food",
-        "amount": 12
-      },
-      "reward": {
-        "type": "coins",
-        "amount": 29
-      },
-      "expiresAtTick": 186,
-      "createdAtTick": 165,
-      "duration": 21
-    }
-  ],
-  "nextQuestId": 26,
-  "mayorName": "Mayor",
+  "quests": [],
+  "nextQuestId": 34,
+  "mayorName": "Alecia",
   "townHallLevel": 1,
   "destructionHistory": {
     "73": "Farm was destroyed by Fire.",
     "91": "Road was destroyed by Fire.",
-    "162": "Road was destroyed by Fire."
+    "132": "Town Hall was destroyed by Fire.",
+    "162": "Road was destroyed by Fire.",
+    "200": "Road was destroyed by Fire."
   },
   "residentHappinessPenalties": {
-    "0": 25
+    "0": 25,
+    "8": 25,
+    "9": 25,
+    "12": 25,
+    "21": 25
   },
   "pendingReconstructions": [],
   "tourists": 0,
-  "tick": 169,
-  "season": 0,
+  "tick": 214,
+  "season": 1,
   "winterStormUntil": null
 }
