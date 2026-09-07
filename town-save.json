@@ -1,11 +1,11 @@
 {
-  "coins": 24369,
-  "food": 869,
-  "wood": 54,
-  "population": 40,
-  "housingCap": 127,
-  "happiness": 68.50000000000004,
-  "ecoScore": 20,
+  "coins": 31529.20000000002,
+  "food": 0,
+  "wood": 242,
+  "population": 50,
+  "housingCap": 277,
+  "happiness": 100,
+  "ecoScore": 26,
   "tiles": [
     {
       "type": "mountain",
@@ -38,16 +38,41 @@
       "type": "river",
       "terrain": true
     },
+    {
+      "type": "factory"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "factory"
+    },
+    {
+      "type": "farm",
+      "growth": 3.5
+    },
+    {
+      "type": "farm",
+      "growth": 4
+    },
     null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
+    {
+      "type": "park",
+      "variant": "p1"
+    },
+    {
+      "type": "concerthall",
+      "pair": 15
+    },
+    {
+      "type": "concerthall",
+      "pair": 14,
+      "role": "secondary"
+    },
+    {
+      "type": "park",
+      "variant": "p1"
+    },
     {
       "type": "mountain",
       "terrain": true,
@@ -60,23 +85,50 @@
       "peak": 49,
       "snow": true
     },
-    null,
+    {
+      "type": "mine"
+    },
     {
       "type": "river",
       "terrain": true
     },
     null,
+    {
+      "type": "farm",
+      "growth": 3
+    },
+    {
+      "type": "farm",
+      "growth": 3
+    },
+    {
+      "type": "farm",
+      "growth": 2
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "factory"
+    },
+    {
+      "type": "farm",
+      "growth": 2
+    },
+    {
+      "type": "farm",
+      "growth": 4
+    },
     null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
     null,
     {
       "type": "mountain",
@@ -96,17 +148,34 @@
       "type": "river",
       "terrain": true
     },
+    {
+      "type": "farm",
+      "growth": 3
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
     null,
     null,
     null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
+    {
+      "type": "road"
+    },
     null,
     {
       "type": "mountain",
@@ -126,11 +195,22 @@
       "terrain": true
     },
     null,
-    null,
-    null,
-    null,
-    null,
-    null,
+    {
+      "type": "farm",
+      "growth": 3
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "factory"
+    },
+    {
+      "type": "factory"
+    },
+    {
+      "type": "factory"
+    },
     {
       "type": "store",
       "storeType": "supermarket"
@@ -144,9 +224,13 @@
     },
     null,
     null,
+    {
+      "type": "road"
+    },
     null,
-    null,
-    null,
+    {
+      "type": "hotel"
+    },
     null,
     null,
     {
@@ -158,26 +242,26 @@
     },
     {
       "type": "farm",
-      "growth": 1,
+      "growth": 4,
       "_windUntil": 277,
       "_windPct": 20,
       "_windPause": true
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 3
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 3
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 3
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 4
     },
     {
       "type": "store",
@@ -192,9 +276,13 @@
     },
     null,
     null,
+    {
+      "type": "road"
+    },
     null,
-    null,
-    null,
+    {
+      "type": "road"
+    },
     null,
     null,
     {
@@ -234,9 +322,13 @@
     },
     null,
     null,
+    {
+      "type": "road"
+    },
     null,
-    null,
-    null,
+    {
+      "type": "road"
+    },
     null,
     {
       "type": "river",
@@ -284,9 +376,13 @@
       "variant": "p2"
     },
     null,
+    {
+      "type": "road"
+    },
     null,
-    null,
-    null,
+    {
+      "type": "road"
+    },
     null,
     {
       "type": "river",
@@ -302,10 +398,12 @@
       "type": "road"
     },
     null,
-    null,
-    null,
     {
-      "type": "house"
+      "type": "restaurant",
+      "cuisine": "pasta"
+    },
+    {
+      "type": "cinema"
     },
     {
       "type": "house"
@@ -314,7 +412,13 @@
       "type": "house"
     },
     {
-      "type": "road"
+      "type": "house"
+    },
+    {
+      "type": "road",
+      "_windUntil": 440,
+      "_windPct": 20,
+      "_windPause": false
     },
     {
       "type": "road"
@@ -322,9 +426,13 @@
     {
       "type": "townhall"
     },
+    {
+      "type": "road"
+    },
     null,
-    null,
-    null,
+    {
+      "type": "road"
+    },
     {
       "type": "river",
       "terrain": true
@@ -374,9 +482,13 @@
       "_windPause": false
     },
     null,
+    {
+      "type": "road"
+    },
     null,
-    null,
-    null,
+    {
+      "type": "road"
+    },
     {
       "type": "river",
       "terrain": true
@@ -415,13 +527,22 @@
       "type": "house"
     },
     {
-      "type": "house"
+      "type": "house",
+      "_windUntil": 420,
+      "_windPct": 20,
+      "_windPause": false
+    },
+    {
+      "type": "museum"
     },
     null,
+    {
+      "type": "road"
+    },
     null,
-    null,
-    null,
-    null,
+    {
+      "type": "road"
+    },
     {
       "type": "river",
       "terrain": true
@@ -437,9 +558,7 @@
     {
       "type": "road"
     },
-    {
-      "type": "road"
-    },
+    null,
     {
       "type": "road"
     },
@@ -455,37 +574,13 @@
       "_windPct": 20,
       "_windPause": false
     },
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
     {
-      "type": "bridge"
-    },
-    {
-      "type": "bridge"
-    },
-    {
-      "type": "road"
-    },
-    {
-      "type": "road"
+      "type": "apartment",
+      "level": 2
     },
     {
       "type": "apartment",
-      "level": 1
-    },
-    {
-      "type": "apartment",
-      "level": 1
-    },
-    {
-      "type": "apartment",
-      "level": 1
+      "level": 2
     },
     {
       "type": "apartment",
@@ -500,16 +595,60 @@
     {
       "type": "road"
     },
-    {
-      "type": "road"
-    },
     null,
     {
       "type": "road"
     },
     {
+      "type": "bridge"
+    },
+    {
+      "type": "bridge"
+    },
+    {
       "type": "road"
     },
+    {
+      "type": "road"
+    },
+    {
+      "type": "apartment",
+      "level": 2
+    },
+    {
+      "type": "apartment",
+      "level": 2
+    },
+    {
+      "type": "apartment",
+      "level": 2
+    },
+    {
+      "type": "apartment",
+      "level": 2,
+      "_windUntil": 413,
+      "_windPct": 20,
+      "_windPause": false
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "police"
+    },
+    null,
     {
       "type": "mountain",
       "terrain": true,
@@ -517,11 +656,45 @@
       "snow": true
     }
   ],
-  "quests": [],
-  "nextQuestId": 63,
+  "quests": [
+    {
+      "id": 80,
+      "name": "Nadia",
+      "tileIndex": 165,
+      "need": {
+        "res": "food",
+        "amount": 21
+      },
+      "reward": {
+        "type": "coins",
+        "amount": 44
+      },
+      "expiresAtTick": 457,
+      "createdAtTick": 441,
+      "duration": 16
+    },
+    {
+      "id": 82,
+      "name": "Ines",
+      "tileIndex": 129,
+      "need": {
+        "res": "food",
+        "amount": 19
+      },
+      "reward": {
+        "type": "coins",
+        "amount": 40
+      },
+      "expiresAtTick": 469,
+      "createdAtTick": 450,
+      "duration": 19
+    }
+  ],
+  "nextQuestId": 83,
   "mayorName": "Alecia",
-  "townHallLevel": 2,
+  "townHallLevel": 3,
   "destructionHistory": {
+    "32": "Road was destroyed by Fire.",
     "73": "Farm was destroyed by Fire.",
     "77": "Farm was destroyed by Fire.",
     "91": "Road was destroyed by Fire.",
@@ -529,11 +702,12 @@
     "132": "Town Hall was destroyed by Fire.",
     "162": "Road was destroyed by Fire.",
     "174": "Road was destroyed by Fire.",
+    "175": "Road was destroyed by Fire.",
     "200": "Road was destroyed by Fire."
   },
   "residentHappinessPenalties": {
     "0": 25,
-    "5": 25,
+    "5": 50,
     "8": 25,
     "9": 25,
     "11": 25,
@@ -543,8 +717,8 @@
     "21": 50
   },
   "pendingReconstructions": [],
-  "tourists": 0,
-  "tick": 370,
-  "season": 1,
-  "winterStormUntil": null
+  "tourists": 3,
+  "tick": 452,
+  "season": 3,
+  "winterStormUntil": 462
 }
