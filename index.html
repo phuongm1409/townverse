@@ -480,15 +480,15 @@
                        repeating-linear-gradient(0deg, rgba(255,255,255,.18) 0 3px, transparent 3px 9px);
   }
   .tile.cinema{
-    background:var(--cinema) !important;
+    background:var(--cinema);
     background-image: linear-gradient(135deg, rgba(255,255,255,.3) 0 20%, transparent 20% 100%);
   }
   .tile.restaurant{
-    background:var(--restaurant) !important;
+    background:var(--restaurant);
     background-image: linear-gradient(135deg, rgba(255,255,255,.3) 0 20%, transparent 20% 100%);
   }
   .tile.concerthall{
-    background:var(--concerthall) !important;
+    background:var(--concerthall);
     background-image: linear-gradient(135deg, rgba(255,255,255,.3) 0 20%, transparent 20% 100%);
   }
   .store-badge{
@@ -1751,8 +1751,7 @@ const RES_FILES = {
   road1:'road 1.png', road2:'road 2.png', road3:'road 3.png', road4:'road 4.png', roadX:'road X.png',
   house:'house.png', farm:'farm.png', factory:'factory.png', park:'park.png',
   townhall:'town hall.png', store:'store.png', bridge:'bridge.png',
-  cinema:'cinema.png', concerthall:'concert hall.png',
-  restaurant_ramen:'ramen-res.png', restaurant_pasta:'pasta-res.png', restaurant_common:'common-res.png',
+  cinema:'cinema.png', concerthall:'concert-hall.png', restaurant:'restaurant.png',
   apartment:'apartment.png', stadium:'stadium.png', clocktower:'clock tower.png', statue:'statue.png',
   fishery:'fishery.png', mine:'mine.png', sawmill:'sawmill.png', quarry:'quarry.png', winery:'winery.png',
   hospital:'hospital.png', police:'police-station.png', hotel:'hotel.png', resort:'resort.png', museum:'museum.png', aquarium:'aquarium.png',
@@ -2607,7 +2606,7 @@ function renderGrid(){
     } else if(t && t.type === 'cinema'){
       applyResImage(div, resFileFor('cinema'));
     } else if(t && t.type === 'restaurant'){
-      applyResImage(div, resFileFor('restaurant', 'restaurant_' + (t.cuisine || 'common')));
+      applyResImage(div, resFileFor('restaurant'));
     } else if(t && t.type === 'concerthall'){
       applyResImage(div, resFileFor('concerthall'));
       if(t.role !== 'secondary'){
