@@ -1598,6 +1598,7 @@ const BUILDINGS = {
   quarry:  { name:'Quarry',  cost:{coins:50},          desc:'Must be placed next to a mountain. Produces wood, 2 jobs',     category:'Production', unlockLevel:3 },
   winery:  { name:'Winery',  cost:{coins:55, wood:10}, desc:'Must be placed next to a farm. Produces coins, +happiness, 2 jobs', category:'Production', unlockLevel:4 },
   hospital: { name:'Hospital', cost:{coins:140, wood:25}, desc:'Health services, 5 jobs, improves town happiness', category:'Services', unlockLevel:4 },
+  police: { name:'Police Station', cost:{coins:110, wood:20}, desc:'Public safety services, 4 police jobs', category:'Services', unlockLevel:3 },
   hotel:    { name:'Hotel', cost:{coins:120, wood:20}, desc:'Tourism building, 4 jobs, earns visitor income', category:'Tourism', unlockLevel:3 },
   resort:   { name:'Resort', cost:{coins:220, wood:35}, desc:'Premium tourism destination, 6 jobs, high visitor income', category:'Tourism', unlockLevel:5 },
   museum:   { name:'Museum', cost:{coins:100, wood:15}, desc:'Cultural attraction, 3 jobs, earns visitor income', category:'Tourism', unlockLevel:3 },
@@ -1698,7 +1699,7 @@ const RES_FILES = {
   restaurant_ramen:'ramen-res.png', restaurant_pasta:'pasta-res.png', restaurant_common:'common-res.png',
   apartment:'apartment.png', stadium:'stadium.png', clocktower:'clock tower.png', statue:'statue.png',
   fishery:'fishery.png', mine:'mine.png', sawmill:'sawmill.png', quarry:'quarry.png', winery:'winery.png',
-  hospital:'hospital.png', hotel:'hotel.png', resort:'resort.png', museum:'museum.png', aquarium:'aquarium.png',
+  hospital:'hospital.png', police:'police station.png', hotel:'hotel.png', resort:'resort.png', museum:'museum.png', aquarium:'aquarium.png',
 };
 const _resCache = {};
 function resFileFor(type, variant){
@@ -1857,6 +1858,24 @@ const EVENTS = [
       state.food = Math.max(0, state.food - lost);
       return { index:randomIndexOfType('farm'), msg:`Pests infested the farms, destroying ${lost} food.`, floater:`-${lost} 🌾`, floaterCls:'bad' };
     }},
+  { key:'robbery', kind:'bad', icon:'🚨', title:'Robbery!', weight:2,
+    run(){
+      if(state.population < 1) return null;
+      const globalIdx = Math.floor(Math.random() * state.population);
+      const resident = applyResidentCrimePenalty(globalIdx, 'was robbed. Personal happiness -25%.');
+      return { index:residentHomeIndex(globalIdx) ?? anyBuildingIndex(), msg:`${resident.name} was robbed and lost 25% personal happiness.`, floater:'-25% 😟', floaterCls:'bad' };
+    }},
+  { key:'thief', kind:'bad', icon:'🕵️', title:'Thief!', weight:2,
+    run(){
+      if(state.population < 1) return null;
+      const victimCount = Math.min(state.population, Math.random() < 0.35 ? 2 : 1);
+      const selected = new Set();
+      while(selected.size < victimCount) selected.add(Math.floor(Math.random() * state.population));
+      const victims = [...selected];
+      victims.forEach(globalIdx => applyResidentCrimePenalty(globalIdx, 'had belongings stolen. Personal happiness -25%.'));
+      const names = victims.map(globalIdx => residentIdentity(globalIdx).name);
+      return { index:residentHomeIndex(victims[0]) ?? anyBuildingIndex(), msg:`A thief stole from ${names.join(' and ')}. Each victim lost 25% personal happiness.`, floater:'-25% 😟', floaterCls:'bad' };
+    }},
   { key:'festival', kind:'good', icon:'🎉', title:'Town Festival', weight:3,
     run(){
       state.happiness = Math.min(100, state.happiness + 15);
@@ -1992,6 +2011,7 @@ let state = {
   mayorName: 'Mayor',
   townHallLevel: 1,
   destructionHistory: {},
+  residentHappinessPenalties: {},
   tourists: 0,
   tick: 0,
   season: 0
@@ -2213,6 +2233,7 @@ function load(){
       if(!state.nextQuestId) state.nextQuestId = 1;
       if(!state.mayorName) state.mayorName = 'Mayor';
       if(!state.destructionHistory || Array.isArray(state.destructionHistory)) state.destructionHistory = {};
+      if(!state.residentHappinessPenalties || Array.isArray(state.residentHappinessPenalties)) state.residentHappinessPenalties = {};
       if(state.tourists == null) state.tourists = 0;
       if(state.ecoScore == null) state.ecoScore = 0;
       if(state.season == null) state.season = Math.floor((state.tick||0) / SEASON_LENGTH) % SEASON_NAMES.length;
@@ -2253,6 +2274,7 @@ function jobsAvailable(){
     if(t && t.type==='quarry') jobs += 2;
     if(t && t.type==='winery') jobs += 2;
     if(t && t.type==='hospital') jobs += 5;
+    if(t && t.type==='police') jobs += 4;
     if(t && t.type==='hotel') jobs += 4;
     if(t && t.type==='resort') jobs += 6;
     if(t && t.type==='museum') jobs += 3;
@@ -2369,7 +2391,7 @@ const BUILD_ICONS = {
   cinema:'🎬', restaurant:'🍽️', concerthall:'🎵',
   stadium:'🏟️', clocktower:'🕰️', statue:'🗿', fishery:'🎣', mine:'⛏️',
   sawmill:'🪚', quarry:'🪨', winery:'🍷',
-  hospital:'🏥', hotel:'🏨', resort:'🌴', museum:'🏛️', aquarium:'🐠'
+  hospital:'🏥', police:'🚓', hotel:'🏨', resort:'🌴', museum:'🏛️', aquarium:'🐠'
 };
 
 const BUILD_CATEGORY_ORDER = ['Infrastructure','Residential','Production','Services','Tourism','Decoration','Entertainment','Landmark'];
@@ -2682,6 +2704,31 @@ function residentIdentity(globalIdx){
   return { name:`${first} ${last}`, seed };
 }
 
+function residentHomeIndex(globalIdx){
+  let start = 0;
+  for(let i=0; i<state.tiles.length; i++){
+    const tile = state.tiles[i];
+    if(!tile || (tile.type !== 'house' && tile.type !== 'apartment')) continue;
+    const capacity = housingCapOf(tile);
+    const occupied = Math.max(0, Math.min(capacity, state.population - start));
+    if(globalIdx >= start && globalIdx < start + occupied) return i;
+    start += capacity;
+  }
+  return null;
+}
+
+function residentHappinessPenalty(globalIdx){
+  return Math.max(0, Number(state.residentHappinessPenalties && state.residentHappinessPenalties[globalIdx]) || 0);
+}
+
+function applyResidentCrimePenalty(globalIdx, action){
+  if(!state.residentHappinessPenalties || Array.isArray(state.residentHappinessPenalties)) state.residentHappinessPenalties = {};
+  state.residentHappinessPenalties[globalIdx] = Math.min(100, residentHappinessPenalty(globalIdx) + 25);
+  const resident = residentIdentity(globalIdx);
+  queueResidentNotification(resident, action);
+  return resident;
+}
+
 function residentEmployment(globalIdx){
   let start = 0;
   for(const type of JOB_ORDER){
@@ -2723,7 +2770,7 @@ function houseResidents(i){
     const employment = residentEmployment(globalIdx);
     const seed = identity.seed;
     const variance = Math.floor((seededRand(seed + 2) - 0.5) * 20);
-    const personalHappiness = Math.max(0, Math.min(100, Math.floor(state.happiness * (1 - debuffPct/100)) + variance));
+    const personalHappiness = Math.max(0, Math.min(100, Math.floor(state.happiness * (1 - debuffPct/100)) + variance - residentHappinessPenalty(globalIdx)));
 
     residents.push({ name:identity.name, job:employment.job, income:employment.income, happiness:personalHappiness });
   }
@@ -2731,11 +2778,11 @@ function houseResidents(i){
 }
 
 // ---- Employees working at a specific production/service building ----
-const JOB_SLOTS = { farm:1, factory:2, store:2, restaurant:2, cinema:2, concerthall:3, fishery:2, mine:2, stadium:4, sawmill:2, quarry:2, winery:2, hospital:5, hotel:4, resort:6, museum:3, aquarium:4 };
-const JOB_TITLES = { farm:'Farmer', factory:'Factory Worker', store:'Shopkeeper', restaurant:'Server', cinema:'Usher', concerthall:'Stagehand', fishery:'Fisher', mine:'Miner', stadium:'Stadium Staff', sawmill:'Lumberjack', quarry:'Quarry Worker', winery:'Vintner', hospital:'Healthcare Worker', hotel:'Hotel Staff', resort:'Resort Staff', museum:'Museum Guide', aquarium:'Aquarium Keeper' };
-const JOB_INCOME = { farm:2, factory:4, store:3, restaurant:3, cinema:3, concerthall:4, fishery:3, mine:4, stadium:4, sawmill:3, quarry:4, winery:4, hospital:5, hotel:4, resort:5, museum:4, aquarium:4 };
+const JOB_SLOTS = { farm:1, factory:2, store:2, restaurant:2, cinema:2, concerthall:3, fishery:2, mine:2, stadium:4, sawmill:2, quarry:2, winery:2, hospital:5, police:4, hotel:4, resort:6, museum:3, aquarium:4 };
+const JOB_TITLES = { farm:'Farmer', factory:'Factory Worker', store:'Shopkeeper', restaurant:'Server', cinema:'Usher', concerthall:'Stagehand', fishery:'Fisher', mine:'Miner', stadium:'Stadium Staff', sawmill:'Lumberjack', quarry:'Quarry Worker', winery:'Vintner', hospital:'Healthcare Worker', police:'Police Officer', hotel:'Hotel Staff', resort:'Resort Staff', museum:'Museum Guide', aquarium:'Aquarium Keeper' };
+const JOB_INCOME = { farm:2, factory:4, store:3, restaurant:3, cinema:3, concerthall:4, fishery:3, mine:4, stadium:4, sawmill:3, quarry:4, winery:4, hospital:5, police:5, hotel:4, resort:5, museum:4, aquarium:4 };
 // Order must mirror the accumulation order used in jobsAvailable().
-const JOB_ORDER = ['farm','factory','store','restaurant','cinema','concerthall','fishery','mine','stadium','sawmill','quarry','winery','hospital','hotel','resort','museum','aquarium'];
+const JOB_ORDER = ['farm','factory','store','restaurant','cinema','concerthall','fishery','mine','stadium','sawmill','quarry','winery','hospital','police','hotel','resort','museum','aquarium'];
 const MAYOR_OFFICE_POSITIONS = [
   { title:'Deputy Mayor', income:8 }, { title:'Festival Director', income:6 },
   { title:'Public Affairs Officer', income:5 }, { title:'Office Administrator', income:4 }
@@ -2778,7 +2825,7 @@ function buildingEmployees(i){
     const identity = residentIdentity(globalIdx);
     const seed = identity.seed;
     const variance = Math.floor((seededRand(seed + 2) - 0.5) * 20);
-    const happiness = Math.max(0, Math.min(100, Math.floor(state.happiness * (1 - debuffPct/100)) + variance));
+    const happiness = Math.max(0, Math.min(100, Math.floor(state.happiness * (1 - debuffPct/100)) + variance - residentHappinessPenalty(globalIdx)));
     employees.push({ name:identity.name, job:JOB_TITLES[type] || 'Worker', income:JOB_INCOME[type] || 1, happiness });
   }
   return { filled, capacity, employees };
