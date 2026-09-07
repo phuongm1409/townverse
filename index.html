@@ -3688,6 +3688,12 @@ function gameTick(){
       state.winterStormUntil = null;
       hideWinterStormOverlay();
     }
+    if(newSeason !== WINTER_SEASON && snowEventActiveTile != null){
+      hideSnowEventOverlay();
+      if(state.tiles[snowEventActiveTile]) delete state.tiles[snowEventActiveTile]._snowBlockUntil;
+      snowEventActiveTile = null;
+      log('❄️ The snow-blocked road cleared as Winter ended.');
+    }
   }
 
   checkWinterStormExpiry();
