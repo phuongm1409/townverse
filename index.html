@@ -2216,12 +2216,52 @@ document.getElementById('ghSettingsBtn').addEventListener('click', ghOpenPanel);
 document.getElementById('ghCancel').addEventListener('click', ghClosePanel);
 document.getElementById('ghOverlay').addEventListener('click', (e)=>{ if(e.target.id==='ghOverlay') ghClosePanel(); });
 
-document.getElementById('ghResetTown').addEventListener('click', ()=>{
-  const sure = confirm('Reset your town? This permanently deletes your saved progress on this device and cannot be undone.');
+async function ghDeletePublishedSave(cfg){
+  if(!(cfg && cfg.token && cfg.repo && cfg.path)) return;
+  const api = `https://api.github.com/repos/${cfg.repo}/contents/${encodeURIComponent(cfg.path).replace(/%2F/g,'/')}`;
+  const headers = { 'Authorization': `Bearer ${cfg.token}`, 'Accept': 'application/vnd.github+json' };
+  const getRes = await fetch(`${api}?ref=${encodeURIComponent(cfg.branch || 'main')}`, { headers });
+  if(getRes.status === 404) return;
+  if(!getRes.ok){
+    const err = await getRes.json().catch(()=>({}));
+    throw new Error(err.message || `GitHub API error ${getRes.status}`);
+  }
+  const remote = await getRes.json();
+  const deleteRes = await fetch(api, {
+    method:'DELETE', headers,
+    body:JSON.stringify({
+      message:`Delete town save for complete reset (${new Date().toISOString()})`,
+      sha:remote.sha,
+      branch:cfg.branch || 'main'
+    })
+  });
+  if(!deleteRes.ok){
+    const err = await deleteRes.json().catch(()=>({}));
+    throw new Error(err.message || `GitHub API error ${deleteRes.status}`);
+  }
+}
+
+document.getElementById('ghResetTown').addEventListener('click', async ()=>{
+  const sure = confirm('Completely start over? This permanently deletes the local town and its published JSON save and cannot be undone.');
   if(!sure) return;
-  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
-  ghClosePanel();
-  location.reload();
+  const btn = document.getElementById('ghResetTown');
+  const status = document.getElementById('ghStatus');
+  const oldText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Deleting town…';
+  status.textContent = '';
+  status.className = '';
+  try{
+    await ghDeletePublishedSave(ghLoadCfg());
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+    ghClosePanel();
+    location.reload();
+  }catch(e){
+    status.textContent = `Reset stopped: ${e.message}`;
+    status.className = 'err';
+    btn.disabled = false;
+    btn.textContent = oldText;
+  }
 });
 
 document.getElementById('ghSave').addEventListener('click', ()=>{
