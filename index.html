@@ -471,7 +471,7 @@
     background-image: repeating-linear-gradient(90deg, rgba(90,60,30,.35) 0 3px, transparent 3px 14px);
   }
   .tile.store{
-    background:var(--store) !important;
+    background:var(--store);
     background-image: linear-gradient(135deg, rgba(255,255,255,.35) 0 20%, transparent 20% 100%);
   }
   .tile.apartment{
@@ -1494,8 +1494,6 @@ function triggerFireAt(i, targetTile){
   setTimeout(()=>{
     const cur = state.tiles[i];
     if(cur === targetTile){
-      if(cur.type === 'house') state.housingCap = Math.max(0, state.housingCap - 4);
-      if(cur.type === 'apartment') state.housingCap = Math.max(0, state.housingCap - housingCapOf(cur));
       destroyLotByEvent(i, 'Fire');
       state.happiness = Math.max(0, state.happiness - 10);
       log(`The fire burned itself out, leaving nothing behind.`);
@@ -1510,6 +1508,58 @@ function destroyedBuildingName(tile){
   return building ? building.name : tile.type.charAt(0).toUpperCase() + tile.type.slice(1);
 }
 
+const DEPARTMENT_RECONSTRUCTION_MS = 60000;
+const reconstructionTimers = new Map();
+
+function armDepartmentReconstruction(item){
+  if(!item || !item.id || reconstructionTimers.has(item.id)) return;
+  const delay = Math.max(0, Number(item.readyAt || 0) - Date.now());
+  const timer = setTimeout(()=>{
+    reconstructionTimers.delete(item.id);
+    completeDepartmentReconstruction(item.id);
+  }, delay);
+  reconstructionTimers.set(item.id, timer);
+}
+
+function queueDepartmentReconstruction(snapshots, name){
+  if(state.townHallLevel < 10 || !Array.isArray(snapshots) || snapshots.length === 0) return;
+  if(!Array.isArray(state.pendingReconstructions)) state.pendingReconstructions = [];
+  const item = {
+    id:`reconstruction-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    name,
+    readyAt:Date.now() + DEPARTMENT_RECONSTRUCTION_MS,
+    snapshots
+  };
+  state.pendingReconstructions.push(item);
+  log(`Departments scheduled the ${name.toLowerCase()} for automatic reconstruction in 1 minute.`);
+  armDepartmentReconstruction(item);
+  save();
+}
+
+function completeDepartmentReconstruction(id){
+  if(!Array.isArray(state.pendingReconstructions)) return;
+  const queueIndex = state.pendingReconstructions.findIndex(item=>item && item.id === id);
+  if(queueIndex === -1) return;
+  const item = state.pendingReconstructions[queueIndex];
+  const clear = item.snapshots.every(snapshot=>!state.tiles[snapshot.index]);
+  if(clear){
+    item.snapshots.forEach(snapshot=>{ state.tiles[snapshot.index] = { ...snapshot.tile }; });
+    const mainTile = item.snapshots.find(snapshot=>snapshot.tile.role !== 'secondary')?.tile || item.snapshots[0].tile;
+    if(mainTile.type === 'house') state.housingCap += 4;
+    if(mainTile.type === 'apartment') state.housingCap += housingCapOf(mainTile);
+    log(`Departments completed reconstruction of the ${item.name.toLowerCase()}.`);
+  } else {
+    log(`Departments canceled reconstruction of the ${item.name.toLowerCase()} because its lot is occupied.`);
+  }
+  state.pendingReconstructions.splice(queueIndex, 1);
+  renderGrid(); renderStats(); save();
+}
+
+function armPendingReconstructions(){
+  if(!Array.isArray(state.pendingReconstructions)) state.pendingReconstructions = [];
+  state.pendingReconstructions.forEach(armDepartmentReconstruction);
+}
+
 function destroyLotByEvent(i, eventName){
   const tile = state.tiles[i];
   if(!tile) return;
@@ -1518,6 +1568,10 @@ function destroyLotByEvent(i, eventName){
   if(tile.pair != null && state.tiles[tile.pair] && state.tiles[tile.pair].type === tile.type){
     destroyedIndices.push(tile.pair);
   }
+  const snapshots = destroyedIndices.map(index=>({ index, tile:{ ...state.tiles[index] } }));
+  const mainTile = snapshots.find(snapshot=>snapshot.tile.role !== 'secondary')?.tile || snapshots[0].tile;
+  if(mainTile.type === 'house') state.housingCap = Math.max(0, state.housingCap - 4);
+  if(mainTile.type === 'apartment') state.housingCap = Math.max(0, state.housingCap - housingCapOf(mainTile));
   destroyedIndices.forEach(idx => {
     state.destructionHistory[idx] = `${name} was destroyed by ${eventName}.`;
     state.tiles[idx] = null;
@@ -1531,6 +1585,8 @@ function destroyLotByEvent(i, eventName){
         renderGrid(); renderStats(); save();
       }
     }, 10000);
+  } else if(tile.type !== 'road'){
+    queueDepartmentReconstruction(snapshots, name);
   }
 }
 
@@ -2012,6 +2068,7 @@ let state = {
   townHallLevel: 1,
   destructionHistory: {},
   residentHappinessPenalties: {},
+  pendingReconstructions: [],
   tourists: 0,
   tick: 0,
   season: 0
@@ -2234,6 +2291,7 @@ function load(){
       if(!state.mayorName) state.mayorName = 'Mayor';
       if(!state.destructionHistory || Array.isArray(state.destructionHistory)) state.destructionHistory = {};
       if(!state.residentHappinessPenalties || Array.isArray(state.residentHappinessPenalties)) state.residentHappinessPenalties = {};
+      if(!Array.isArray(state.pendingReconstructions)) state.pendingReconstructions = [];
       if(state.tourists == null) state.tourists = 0;
       if(state.ecoScore == null) state.ecoScore = 0;
       if(state.season == null) state.season = Math.floor((state.tick||0) / SEASON_LENGTH) % SEASON_NAMES.length;
@@ -3753,6 +3811,7 @@ computeTileSize();
 renderGrid();
 renderStats();
 renderQuests();
+armPendingReconstructions();
 log(loaded ? "Welcome back! Your town has been restored." : "New town founded. Start building!");
 setInterval(gameTick, 3000);
 
