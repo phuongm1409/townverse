@@ -1,11 +1,11 @@
 {
-  "coins": 23046.5,
-  "food": 1235,
-  "wood": 14,
-  "population": 27,
-  "housingCap": 71,
-  "happiness": 100,
-  "ecoScore": 4,
+  "coins": 24369,
+  "food": 869,
+  "wood": 54,
+  "population": 40,
+  "housingCap": 127,
+  "happiness": 68.50000000000004,
+  "ecoScore": 20,
   "tiles": [
     {
       "type": "mountain",
@@ -131,11 +131,17 @@
     null,
     null,
     null,
-    null,
+    {
+      "type": "store",
+      "storeType": "supermarket"
+    },
     {
       "type": "road"
     },
-    null,
+    {
+      "type": "store",
+      "storeType": "bookstore"
+    },
     null,
     null,
     null,
@@ -180,7 +186,10 @@
     {
       "type": "road"
     },
-    null,
+    {
+      "type": "store",
+      "storeType": "gaming"
+    },
     null,
     null,
     null,
@@ -384,7 +393,10 @@
     {
       "type": "road"
     },
-    null,
+    {
+      "type": "store",
+      "storeType": "convenience"
+    },
     {
       "type": "store",
       "storeType": "fashion"
@@ -410,7 +422,6 @@
     null,
     null,
     null,
-    null,
     {
       "type": "river",
       "terrain": true
@@ -419,7 +430,13 @@
       "type": "river",
       "terrain": true
     },
-    null,
+    {
+      "type": "river",
+      "terrain": true
+    },
+    {
+      "type": "road"
+    },
     {
       "type": "road"
     },
@@ -438,9 +455,7 @@
       "_windPct": 20,
       "_windPause": false
     },
-    {
-      "type": "house"
-    },
+    null,
     null,
     null,
     null,
@@ -449,15 +464,29 @@
     null,
     null,
     {
-      "type": "river",
-      "terrain": true
+      "type": "bridge"
     },
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
+    {
+      "type": "bridge"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "apartment",
+      "level": 1
+    },
+    {
+      "type": "apartment",
+      "level": 1
+    },
+    {
+      "type": "apartment",
+      "level": 1
+    },
     {
       "type": "apartment",
       "level": 2
@@ -488,41 +517,8 @@
       "snow": true
     }
   ],
-  "quests": [
-    {
-      "id": 52,
-      "name": "Sana",
-      "tileIndex": 130,
-      "need": {
-        "res": "wood",
-        "amount": 10
-      },
-      "reward": {
-        "type": "coins",
-        "amount": 26
-      },
-      "expiresAtTick": 349,
-      "createdAtTick": 329,
-      "duration": 20
-    },
-    {
-      "id": 54,
-      "name": "Finn",
-      "tileIndex": 129,
-      "need": {
-        "res": "wood",
-        "amount": 13
-      },
-      "reward": {
-        "type": "happiness",
-        "amount": 8
-      },
-      "expiresAtTick": 350,
-      "createdAtTick": 335,
-      "duration": 15
-    }
-  ],
-  "nextQuestId": 57,
+  "quests": [],
+  "nextQuestId": 63,
   "mayorName": "Alecia",
   "townHallLevel": 2,
   "destructionHistory": {
@@ -540,13 +536,15 @@
     "5": 25,
     "8": 25,
     "9": 25,
+    "11": 25,
     "12": 25,
+    "13": 25,
     "17": 25,
-    "21": 25
+    "21": 50
   },
   "pendingReconstructions": [],
   "tourists": 0,
-  "tick": 340,
-  "season": 0,
+  "tick": 370,
+  "season": 1,
   "winterStormUntil": null
 }
