@@ -1,11 +1,11 @@
 {
-  "coins": 6287,
-  "food": 171,
-  "wood": 29,
-  "population": 16,
-  "housingCap": 28,
-  "happiness": 0,
-  "ecoScore": 3,
+  "coins": 7420.5,
+  "food": 140,
+  "wood": 16.5,
+  "population": 14,
+  "housingCap": 36,
+  "happiness": 24.199999999999996,
+  "ecoScore": 9,
   "tiles": [
     {
       "type": "mountain",
@@ -148,23 +148,23 @@
     null,
     {
       "type": "farm",
-      "growth": 2
-    },
-    {
-      "type": "farm",
       "growth": 1
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 0
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 0
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 0
+    },
+    {
+      "type": "farm",
+      "growth": 0
     },
     null,
     null,
@@ -257,7 +257,10 @@
       "_windPct": 20,
       "_windPause": false
     },
-    null,
+    {
+      "type": "park",
+      "variant": "p2"
+    },
     null,
     null,
     null,
@@ -269,7 +272,9 @@
     },
     null,
     null,
-    null,
+    {
+      "type": "road"
+    },
     null,
     null,
     null,
@@ -299,10 +304,6 @@
     null,
     null,
     null,
-    null,
-    null,
-    null,
-    null,
     {
       "type": "road"
     },
@@ -315,7 +316,22 @@
     {
       "type": "road"
     },
-    null,
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "park",
+      "variant": "p2"
+    },
     null,
     null,
     null,
@@ -337,8 +353,12 @@
     {
       "type": "house"
     },
-    null,
-    null,
+    {
+      "type": "house"
+    },
+    {
+      "type": "house"
+    },
     null,
     null,
     null,
@@ -399,8 +419,7 @@
       "type": "road"
     },
     {
-      "type": "road",
-      "_snowBlockUntil": 155
+      "type": "road"
     },
     {
       "type": "road"
@@ -414,39 +433,23 @@
   ],
   "quests": [
     {
-      "id": 22,
-      "name": "Sana",
-      "tileIndex": 96,
+      "id": 25,
+      "name": "Priya",
+      "tileIndex": 128,
       "need": {
-        "res": "wood",
+        "res": "food",
         "amount": 12
       },
       "reward": {
         "type": "coins",
         "amount": 29
       },
-      "expiresAtTick": 170,
-      "createdAtTick": 145,
-      "duration": 25
-    },
-    {
-      "id": 23,
-      "name": "Elena",
-      "tileIndex": 96,
-      "need": {
-        "res": "food",
-        "amount": 20
-      },
-      "reward": {
-        "type": "happiness",
-        "amount": 7
-      },
-      "expiresAtTick": 165,
-      "createdAtTick": 150,
-      "duration": 15
+      "expiresAtTick": 186,
+      "createdAtTick": 165,
+      "duration": 21
     }
   ],
-  "nextQuestId": 24,
+  "nextQuestId": 26,
   "mayorName": "Mayor",
   "townHallLevel": 1,
   "destructionHistory": {
@@ -459,7 +462,7 @@
   },
   "pendingReconstructions": [],
   "tourists": 0,
-  "tick": 150,
-  "season": 3,
+  "tick": 169,
+  "season": 0,
   "winterStormUntil": null
 }
