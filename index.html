@@ -282,7 +282,7 @@
     100%{ transform:translate(-50%,-46px); opacity:0; }
   }
   #residentNotifications{
-    position:absolute; left:18px; top:18px; z-index:180; width:270px;
+    position:absolute; left:18px; top:18px; z-index:180; width:270px; max-width:calc(100% - 36px);
     pointer-events:none;
   }
   .resident-notification{
@@ -905,13 +905,13 @@
 </div>
 
 <div class="gameWrap">
-<div id="residentNotifications"></div>
 <div class="leftCol">
   <div id="statbar"></div>
 
   <div class="main">
     <div class="gridwrap">
       <div id="mapStage" style="position:relative;">
+        <div id="residentNotifications"></div>
         <div id="grid"></div>
         <div id="trucks"></div>
         <div id="fires"></div>
@@ -1585,7 +1585,7 @@ const BUILDINGS = {
   factory:  { name:'Factory',   cost:{coins:30, wood:5},   desc:'Produces coins, 2 jobs',                category:'Production',     unlockLevel:1 },
   store:    { name:'Store',     cost:{coins:35, wood:5},   desc:'Sells goods, 2 jobs, +happiness. Click after placing to choose a store type', category:'Production',     unlockLevel:2 },
   park:     { name:'Park',      cost:{coins:15},           desc:'+happiness nearby, +eco points',       category:'Residential',    unlockLevel:1 },
-  cinema:      { name:'Movie Theater', cost:{coins:60, wood:10},  desc:'+10% happiness in the adjacent area, visitors +5% happiness per visit, 2 jobs', category:'Entertainment', unlockLevel:2 },
+  cinema:      { name:'Cinema', cost:{coins:60, wood:10},  desc:'+10% happiness in the adjacent area, visitors +5% happiness per visit, 2 jobs', category:'Entertainment', unlockLevel:2 },
   restaurant:  { name:'Restaurant',    cost:{coins:45, wood:5},   desc:'Serves a random cuisine, 2 jobs, +happiness',        category:'Entertainment', unlockLevel:2 },
   concerthall: { name:'Concert Hall',  cost:{coins:120, wood:20}, desc:'Needs 2 tiles side by side. Hosts a show every 100 ticks that runs for 50 ticks, +20% happiness per show', category:'Entertainment', unlockLevel:3, width:2 },
   townhall: { name:'Town Hall', cost:{coins:80, wood:15},  desc:'Landmark building, boosts town happiness (only 1 per map)', category:'Landmark', unlockLevel:1 },
@@ -1699,7 +1699,7 @@ const RES_FILES = {
   restaurant_ramen:'ramen-res.png', restaurant_pasta:'pasta-res.png', restaurant_common:'common-res.png',
   apartment:'apartment.png', stadium:'stadium.png', clocktower:'clock tower.png', statue:'statue.png',
   fishery:'fishery.png', mine:'mine.png', sawmill:'sawmill.png', quarry:'quarry.png', winery:'winery.png',
-  hospital:'hospital.png', police:'police station.png', hotel:'hotel.png', resort:'resort.png', museum:'museum.png', aquarium:'aquarium.png',
+  hospital:'hospital.png', police:'police-station.png', hotel:'hotel.png', resort:'resort.png', museum:'museum.png', aquarium:'aquarium.png',
 };
 const _resCache = {};
 function resFileFor(type, variant){
@@ -2433,6 +2433,7 @@ function renderBuildList(){
   }
   {
     (categories[selectedBuildCategory] || []).forEach(([key, b])=>{
+      if(key === 'quarry') return;
       const unlocked = state.townHallLevel >= b.unlockLevel;
       const isNew = unlocked && countType(key) === 0;
       const btn = document.createElement('div');
@@ -2958,7 +2959,7 @@ function tileInfo(t, i){
   }
 
   if(t.type === 'cinema'){
-    return { name:'Movie Theater', facts:['+10% happiness in the adjacent area', 'Visitors +5% happiness per visit', '2 jobs'] };
+    return { name:'Cinema', facts:['+10% happiness in the adjacent area', 'Visitors +5% happiness per visit', '2 jobs'] };
   }
 
   if(t.type === 'restaurant'){
@@ -3238,7 +3239,7 @@ function openCinemaModal(i){
     <div class="modal-stat-row"><span>Per visit</span><span class="val">+5% 😊</span></div>
     <div class="modal-stat-row"><span>Jobs</span><span class="val">+2 jobs</span></div>
     ${employeesModalSection(i)}`;
-  openModal('🎬 Movie Theater', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
+  openModal('🎬 Cinema', body, `<button class="modal-btn-secondary" onclick="closeBuildingModal()">Close</button>`);
 }
 
 function openRestaurantModal(i){
@@ -3699,7 +3700,7 @@ function gameTick(){
     if(t && t.type === 'factory' && Math.random() < 0.5) spawnSmoke(i);
   });
 
-  // movie theaters occasionally draw a crowd for a screening
+  // cinemas occasionally draw a crowd for a screening
   state.tiles.forEach((t, i)=>{
     if(t && t.type === 'cinema' && Math.random() < 0.35){
       state.happiness = Math.min(100, state.happiness + 3);
