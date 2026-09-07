@@ -1,11 +1,11 @@
 {
-  "coins": 10832,
-  "food": 68,
-  "wood": 9,
-  "population": 20,
-  "housingCap": 36,
+  "coins": 20734,
+  "food": 1203,
+  "wood": 1.5,
+  "population": 21,
+  "housingCap": 56,
   "happiness": 0,
-  "ecoScore": 9,
+  "ecoScore": 1,
   "tiles": [
     {
       "type": "mountain",
@@ -132,7 +132,9 @@
     null,
     null,
     null,
-    null,
+    {
+      "type": "road"
+    },
     null,
     null,
     null,
@@ -151,26 +153,34 @@
     },
     {
       "type": "farm",
+      "growth": 1,
+      "_windUntil": 277,
+      "_windPct": 20,
+      "_windPause": true
+    },
+    {
+      "type": "farm",
+      "growth": 0
+    },
+    {
+      "type": "farm",
+      "growth": 0
+    },
+    {
+      "type": "farm",
+      "growth": 0
+    },
+    {
+      "type": "farm",
       "growth": 1
     },
     {
-      "type": "farm",
-      "growth": 0
+      "type": "store",
+      "storeType": "convenience"
     },
     {
-      "type": "farm",
-      "growth": 0
+      "type": "road"
     },
-    {
-      "type": "farm",
-      "growth": 0
-    },
-    {
-      "type": "farm",
-      "growth": 0
-    },
-    null,
-    null,
     null,
     null,
     null,
@@ -210,7 +220,7 @@
       "variant": "p1"
     },
     {
-      "type": "house"
+      "type": "road"
     },
     {
       "type": "house"
@@ -230,8 +240,8 @@
       "terrain": true
     },
     {
-      "type": "river",
-      "terrain": true
+      "type": "farm",
+      "growth": 1
     },
     {
       "type": "road"
@@ -277,27 +287,34 @@
       "terrain": true
     },
     null,
-    null,
     {
-      "type": "road"
-    },
-    null,
-    null,
-    null,
-    {
-      "type": "house"
-    },
-    {
-      "type": "house"
-    },
-    {
-      "type": "house"
+      "type": "farm",
+      "growth": 1
     },
     {
       "type": "road"
     },
     null,
     null,
+    null,
+    {
+      "type": "house"
+    },
+    {
+      "type": "house"
+    },
+    {
+      "type": "house"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "townhall"
+    },
     null,
     null,
     null,
@@ -307,15 +324,21 @@
     },
     null,
     null,
-    null,
     {
-      "type": "road"
+      "type": "farm",
+      "growth": 1
     },
     {
       "type": "road"
     },
     {
       "type": "road"
+    },
+    {
+      "type": "road",
+      "_windUntil": 270,
+      "_windPct": 20,
+      "_windPause": false
     },
     {
       "type": "road"
@@ -334,7 +357,10 @@
     },
     {
       "type": "park",
-      "variant": "p2"
+      "variant": "p2",
+      "_windUntil": 256,
+      "_windPct": 20,
+      "_windPause": false
     },
     null,
     null,
@@ -350,7 +376,10 @@
     null,
     null,
     null,
-    null,
+    {
+      "type": "store",
+      "storeType": "supermarket"
+    },
     {
       "type": "road"
     },
@@ -378,17 +407,27 @@
       "terrain": true
     },
     null,
-    null,
-    null,
-    null,
-    null,
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "road"
+    },
     {
       "type": "road",
       "_windUntil": 104,
       "_windPct": 20,
       "_windPause": false
     },
-    null,
+    {
+      "type": "house"
+    },
     null,
     null,
     null,
@@ -406,7 +445,10 @@
     null,
     null,
     null,
-    null,
+    {
+      "type": "apartment",
+      "level": 1
+    },
     {
       "type": "road"
     },
@@ -433,19 +475,72 @@
       "snow": true
     }
   ],
-  "quests": [],
-  "nextQuestId": 34,
+  "quests": [
+    {
+      "id": 48,
+      "name": "Leo",
+      "tileIndex": 128,
+      "need": {
+        "res": "wood",
+        "amount": 8
+      },
+      "reward": {
+        "type": "coins",
+        "amount": 23
+      },
+      "expiresAtTick": 313,
+      "createdAtTick": 292,
+      "duration": 21
+    },
+    {
+      "id": 49,
+      "name": "Nadia",
+      "tileIndex": 164,
+      "need": {
+        "res": "wood",
+        "amount": 7
+      },
+      "reward": {
+        "type": "coins",
+        "amount": 21
+      },
+      "expiresAtTick": 321,
+      "createdAtTick": 297,
+      "duration": 24
+    },
+    {
+      "id": 50,
+      "name": "Oskar",
+      "tileIndex": 180,
+      "need": {
+        "res": "food",
+        "amount": 21
+      },
+      "reward": {
+        "type": "coins",
+        "amount": 44
+      },
+      "expiresAtTick": 319,
+      "createdAtTick": 301,
+      "duration": 18
+    }
+  ],
+  "nextQuestId": 51,
   "mayorName": "Alecia",
-  "townHallLevel": 1,
+  "townHallLevel": 2,
   "destructionHistory": {
     "73": "Farm was destroyed by Fire.",
+    "77": "Farm was destroyed by Fire.",
     "91": "Road was destroyed by Fire.",
+    "93": "Road was destroyed by Fire.",
     "132": "Town Hall was destroyed by Fire.",
     "162": "Road was destroyed by Fire.",
+    "174": "Road was destroyed by Fire.",
     "200": "Road was destroyed by Fire."
   },
   "residentHappinessPenalties": {
     "0": 25,
+    "5": 25,
     "8": 25,
     "9": 25,
     "12": 25,
@@ -453,7 +548,7 @@
   },
   "pendingReconstructions": [],
   "tourists": 0,
-  "tick": 214,
-  "season": 1,
-  "winterStormUntil": null
+  "tick": 301,
+  "season": 3,
+  "winterStormUntil": 309
 }
