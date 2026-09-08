@@ -507,6 +507,10 @@
     font-family:var(--font-heading); font-size:7px; font-weight:700; color:#fff;
     text-shadow:0 1px 1px rgba(0,0,0,.4); text-align:center; white-space:nowrap;
   }
+  .tile.emoji-building{
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px; line-height:1; text-shadow:0 2px 2px rgba(0,0,0,.18);
+  }
   #concertAnnounceLayer{ position:absolute; top:0; left:0; pointer-events:none; z-index:19; overflow:visible; }
   .concert-announce-chip{
     position:absolute; transform:translate(-50%, -100%);
@@ -1252,6 +1256,15 @@ function activeCount(type){
   state.tiles.forEach(t=>{ if(t && t.type === type && !isProductionPaused(t, type)) n++; });
   return n;
 }
+function hasServiceBuilding(type){
+  return state.tiles.some(tile=>tile && tile.type === type && tile.role !== 'secondary');
+}
+function policeProtectionActive(){ return hasServiceBuilding('police'); }
+function hospitalProtectionActive(){ return hasServiceBuilding('hospital'); }
+// Bad-event penalties are severe without a Hospital; a Hospital halves them.
+function protectedHappinessPenalty(basePenalty){
+  return basePenalty * (hospitalProtectionActive() ? 1 : 2);
+}
 
 function positionOverStage(el, index){
   const r = Math.floor(index/COLS), c = index % COLS;
@@ -1281,7 +1294,7 @@ function maybeTriggerFallWindEvent(){
   if(!tile) return;
   const untilTick = state.tick + FALL_WIND_TICKS;
   tile._windUntil = untilTick;
-  tile._windPct = 20;
+  tile._windPct = protectedHappinessPenalty(20);
   const production = isProductionLot(tile);
   tile._windPause = production; // pause output only for production lots
 
@@ -1294,7 +1307,7 @@ function maybeTriggerFallWindEvent(){
     ? `A gust of fall wind swept through the ${BUILDINGS[tile.type].name.toLowerCase()}, unsettling workers and pausing production.`
     : `A gust of fall wind swept through, unsettling everyone nearby.`;
   log(`🍂 ${msg}`);
-  showFloater(idx, '-20% 😟', 'bad');
+  showFloater(idx, `-${Math.round(tile._windPct)}% 😟`, 'bad');
   renderGrid(); renderStats();
 
   setTimeout(()=>{
@@ -1381,7 +1394,8 @@ function adjacentPeopleCount(idx){
 function maybeTriggerSnowEvent(){
   if(state.season !== WINTER_SEASON) return;
   if(snowEventActiveTile != null) return; // one accident at a time
-  if(Math.random() > 0.10) return; // "at random", sometimes
+  const accidentChance = policeProtectionActive() ? 0.04 : 0.12;
+  if(Math.random() > accidentChance) return;
   const roadIdx = [];
   state.tiles.forEach((t,i)=>{ if(isRoadLike(t)) roadIdx.push(i); });
   if(roadIdx.length === 0) return;
@@ -1389,7 +1403,8 @@ function maybeTriggerSnowEvent(){
   const tile = state.tiles[idx];
 
   const people = adjacentPeopleCount(idx);
-  const penalty = Math.min(15, 2 + people * 0.8); // busier neighborhoods take a bigger hit, capped
+  const basePenalty = Math.min(15, 2 + people * 0.8); // busier neighborhoods take a bigger hit, capped
+  const penalty = protectedHappinessPenalty(basePenalty);
 
   tile._snowBlockUntil = state.tick + SNOW_EVENT_TICKS;
   snowEventActiveTile = idx;
@@ -1495,7 +1510,7 @@ function triggerFireAt(i, targetTile){
     const cur = state.tiles[i];
     if(cur === targetTile){
       destroyLotByEvent(i, 'Fire');
-      state.happiness = Math.max(0, state.happiness - 10);
+      state.happiness = Math.max(0, state.happiness - protectedHappinessPenalty(10));
       log(`The fire burned itself out, leaving nothing behind.`);
       renderGrid(); renderStats(); save();
     }
@@ -1645,7 +1660,7 @@ const BUILDINGS = {
   restaurant:  { name:'Restaurant',    cost:{coins:45, wood:5},   desc:'Serves a random cuisine, 2 jobs, +happiness',        category:'Entertainment', unlockLevel:2 },
   concerthall: { name:'Concert Hall',  cost:{coins:120, wood:20}, desc:'Needs 2 tiles side by side. Hosts a show every 100 ticks that runs for 50 ticks, +20% happiness per show', category:'Entertainment', unlockLevel:3, width:2 },
   townhall: { name:'Town Hall', cost:{coins:80, wood:15},  desc:'Landmark building, boosts town happiness (only 1 per map)', category:'Landmark', unlockLevel:1 },
-  stadium:    { name:'Stadium',     cost:{coins:200, wood:40}, desc:'Major landmark. Big +happiness boost and 4 jobs',            category:'Landmark', unlockLevel:5 },
+  stadium:    { name:'Stadium',     cost:{coins:200, wood:40}, desc:'Needs 2 tiles side by side. Major landmark with a big happiness boost and 4 jobs', category:'Landmark', unlockLevel:5, width:2 },
   clocktower: { name:'Clock Tower', cost:{coins:70, wood:15},  desc:'+happiness aura for the whole town and speeds up citizen requests', category:'Landmark', unlockLevel:2 },
   statue:     { name:'Statue',      cost:{coins:10},           desc:'Cheap decoration, small +happiness',                         category:'Landmark', unlockLevel:1 },
   fishery: { name:'Fishery', cost:{coins:25, wood:10}, desc:'Must be placed next to a river. Produces food, 2 jobs', category:'Production', unlockLevel:2 },
@@ -1653,8 +1668,8 @@ const BUILDINGS = {
   sawmill: { name:'Sawmill', cost:{coins:40, wood:5},  desc:'Produces wood, 2 jobs',                                        category:'Production', unlockLevel:2 },
   quarry:  { name:'Quarry',  cost:{coins:50},          desc:'Must be placed next to a mountain. Produces wood, 2 jobs',     category:'Production', unlockLevel:3 },
   winery:  { name:'Winery',  cost:{coins:55, wood:10}, desc:'Must be placed next to a farm. Produces coins, +happiness, 2 jobs', category:'Production', unlockLevel:4 },
-  hospital: { name:'Hospital', cost:{coins:140, wood:25}, desc:'Health services, 5 jobs, improves town happiness', category:'Services', unlockLevel:4 },
-  police: { name:'Police Station', cost:{coins:110, wood:20}, desc:'Public safety services, 4 police jobs', category:'Services', unlockLevel:3 },
+  hospital: { name:'Hospital', cost:{coins:140, wood:25}, desc:'Health services, 5 jobs, improves happiness and halves bad-event penalties', category:'Services', unlockLevel:4 },
+  police: { name:'Police Station', cost:{coins:110, wood:20}, desc:'Public safety, 4 police jobs, and reduces crime and accident rates to one-third', category:'Services', unlockLevel:3 },
   hotel:    { name:'Hotel', cost:{coins:120, wood:20}, desc:'Tourism building, 4 jobs, earns visitor income', category:'Tourism', unlockLevel:3 },
   resort:   { name:'Resort', cost:{coins:220, wood:35}, desc:'Premium tourism destination, 6 jobs, high visitor income', category:'Tourism', unlockLevel:5 },
   museum:   { name:'Museum', cost:{coins:100, wood:15}, desc:'Cultural attraction, 3 jobs, earns visitor income', category:'Tourism', unlockLevel:3 },
@@ -1757,7 +1772,7 @@ const RES_FILES = {
   house:'house.png', farm:'farm.png', factory:'factory.png', park:'park.png',
   townhall:'town hall.png', store:'store.png', bridge:'bridge.png',
   cinema:'cinema.png', concerthall:'concert-hall.png', restaurant:'restaurant.png',
-  apartment:'apartment.png', stadium:'stadium.png', clocktower:'clock tower.png', statue:'statue.png',
+  apartment:'apartment.png', stadium:'concert-hall.png',
   fishery:'fishery.png', mine:'mine.png', sawmill:'sawmill.png', quarry:'quarry.png', winery:'winery.png',
   hospital:'hospital.png', police:'police-station.png', hotel:'hotel.png', resort:'resort.png', museum:'museum.png', aquarium:'aquarium.png',
 };
@@ -1888,9 +1903,10 @@ const EVENTS = [
     }},
   { key:'storm', kind:'bad', icon:'⛈️', title:'Storm', weight:2,
     run(){
-      state.happiness = Math.max(0, state.happiness - 4);
+      const penalty = protectedHappinessPenalty(4);
+      state.happiness = Math.max(0, state.happiness - penalty);
       startRain(6000);
-      return { index:anyBuildingIndex(), msg:`A storm rolled through, dampening spirits for a while.`, floater:'-4 😊', floaterCls:'bad' };
+      return { index:anyBuildingIndex(), msg:`A storm rolled through, reducing happiness by ${penalty} points.`, floater:`-${penalty} 😊`, floaterCls:'bad' };
     }},
   { key:'flood', kind:'bad', icon:'🌊', title:'Flood!', weight:2,
     run(){
@@ -1923,8 +1939,8 @@ const EVENTS = [
     run(){
       if(state.population < 1) return null;
       const globalIdx = Math.floor(Math.random() * state.population);
-      const resident = applyResidentCrimePenalty(globalIdx, 'was robbed. Personal happiness -25%.');
-      return { index:residentHomeIndex(globalIdx) ?? anyBuildingIndex(), msg:`${resident.name} was robbed and lost 25% personal happiness.`, floater:'-25% 😟', floaterCls:'bad' };
+      const resident = applyResidentCrimePenalty(globalIdx, 'was robbed.');
+      return { index:residentHomeIndex(globalIdx) ?? anyBuildingIndex(), msg:`${resident.name} was robbed and lost ${resident.penalty}% personal happiness.`, floater:`-${resident.penalty}% 😟`, floaterCls:'bad' };
     }},
   { key:'thief', kind:'bad', icon:'🕵️', title:'Thief!', weight:2,
     run(){
@@ -1933,9 +1949,10 @@ const EVENTS = [
       const selected = new Set();
       while(selected.size < victimCount) selected.add(Math.floor(Math.random() * state.population));
       const victims = [...selected];
-      victims.forEach(globalIdx => applyResidentCrimePenalty(globalIdx, 'had belongings stolen. Personal happiness -25%.'));
+      const affected = victims.map(globalIdx => applyResidentCrimePenalty(globalIdx, 'had belongings stolen.'));
       const names = victims.map(globalIdx => residentIdentity(globalIdx).name);
-      return { index:residentHomeIndex(victims[0]) ?? anyBuildingIndex(), msg:`A thief stole from ${names.join(' and ')}. Each victim lost 25% personal happiness.`, floater:'-25% 😟', floaterCls:'bad' };
+      const penalty = affected[0].penalty;
+      return { index:residentHomeIndex(victims[0]) ?? anyBuildingIndex(), msg:`A thief stole from ${names.join(' and ')}. Each victim lost ${penalty}% personal happiness.`, floater:`-${penalty}% 😟`, floaterCls:'bad' };
     }},
   { key:'festival', kind:'good', icon:'🎉', title:'Town Festival', weight:3,
     run(){
@@ -1969,11 +1986,12 @@ const EVENTS = [
     }},
   { key:'storm', kind:'bad', icon:'⛈️', title:'Storm', weight:2,
     run(){
-      state.happiness = Math.max(0, state.happiness - 4);
+      const penalty = protectedHappinessPenalty(4);
+      state.happiness = Math.max(0, state.happiness - penalty);
       startRain(6000);
       playSfx('event');
       const i = anyBuildingIndex();
-      return { index:i, msg:`A storm rolled through town, keeping everyone indoors for a while.`, floater:'-4 😊', floaterCls:'bad' };
+      return { index:i, msg:`A storm rolled through town, reducing happiness by ${penalty} points.`, floater:`-${penalty} 😊`, floaterCls:'bad' };
     }},
 ];
 
@@ -2000,16 +2018,23 @@ function showEventBubble(index, kind, icon, title, desc){
 
 function maybeTriggerEvent(){
   if(Math.random() > 0.16) return;
-  const totalWeight = EVENTS.reduce((s,e)=> s+e.weight, 0);
+  const effectiveWeight = event=> event.weight * ((!policeProtectionActive() && (event.key === 'robbery' || event.key === 'thief')) ? 3 : 1);
+  const totalWeight = EVENTS.reduce((s,e)=> s + effectiveWeight(e), 0);
   let roll = Math.random() * totalWeight;
   let chosen = null;
   for(const e of EVENTS){
-    roll -= e.weight;
+    roll -= effectiveWeight(e);
     if(roll <= 0){ chosen = e; break; }
   }
   if(!chosen) return;
   const result = chosen.run();
   if(!result) return;
+  const unhandledBadEventPenalty = { flood:3, drought:4, pests:3 }[chosen.key];
+  if(unhandledBadEventPenalty){
+    const penalty = protectedHappinessPenalty(unhandledBadEventPenalty);
+    state.happiness = Math.max(0, state.happiness - penalty);
+    result.msg += ` Happiness fell by ${penalty} points.`;
+  }
   playSfx('event');
   log(`${chosen.icon} ${result.msg}`);
   renderGrid(); renderStats();
@@ -2355,6 +2380,21 @@ function load(){
   return false;
 }
 
+// Upgrade legacy one-tile Stadiums without overwriting an occupied lot.
+function migrateLegacyStadiumFootprints(){
+  state.tiles.forEach((tile, i)=>{
+    if(!tile || tile.type !== 'stadium' || tile.pair != null) return;
+    const col = i % COLS;
+    const candidates = [];
+    if(col + 1 < COLS) candidates.push(i + 1);
+    if(col > 0) candidates.push(i - 1);
+    const pairIndex = candidates.find(index=>!state.tiles[index]);
+    if(pairIndex == null) return;
+    tile.pair = pairIndex;
+    state.tiles[pairIndex] = { type:'stadium', pair:i, role:'secondary' };
+  });
+}
+
 function log(msg){
   logEntries.unshift(`> ${msg}`);
   logEntries = logEntries.slice(0, 30);
@@ -2372,7 +2412,7 @@ function jobsAvailable(){
     if(t && t.type==='concerthall' && t.role !== 'secondary') jobs += 3;
     if(t && t.type==='fishery') jobs += 2;
     if(t && t.type==='mine') jobs += 2;
-    if(t && t.type==='stadium') jobs += 4;
+    if(t && t.type==='stadium' && t.role !== 'secondary') jobs += 4;
     if(t && t.type==='sawmill') jobs += 2;
     if(t && t.type==='quarry') jobs += 2;
     if(t && t.type==='winery') jobs += 2;
@@ -2625,6 +2665,14 @@ function renderGrid(){
         overlay.innerHTML = `<span class="concerthall-icon">🎵</span><span class="concerthall-label">${t._liveShow || 'Concert Hall'}</span>`;
         div.appendChild(overlay);
       }
+    } else if(t && t.type === 'stadium'){
+      applyResImage(div, resFileFor('stadium'), null, t.pair != null ? {
+        size:'200% 100%',
+        position:t.role === 'secondary' ? 'right center' : 'left center'
+      } : undefined);
+    } else if(t && (t.type === 'clocktower' || t.type === 'statue')){
+      div.classList.add('emoji-building');
+      div.textContent = BUILD_ICONS[t.type];
     } else if(t && resFileFor(t.type)){
       applyResImage(div, resFileFor(t.type));
     }
@@ -2837,10 +2885,11 @@ function residentHappinessPenalty(globalIdx){
 
 function applyResidentCrimePenalty(globalIdx, action){
   if(!state.residentHappinessPenalties || Array.isArray(state.residentHappinessPenalties)) state.residentHappinessPenalties = {};
-  state.residentHappinessPenalties[globalIdx] = Math.min(100, residentHappinessPenalty(globalIdx) + 25);
+  const penalty = protectedHappinessPenalty(25);
+  state.residentHappinessPenalties[globalIdx] = Math.min(100, residentHappinessPenalty(globalIdx) + penalty);
   const resident = residentIdentity(globalIdx);
-  queueResidentNotification(resident, action);
-  return resident;
+  queueResidentNotification(resident, `${action} Personal happiness -${penalty}%.`);
+  return { ...resident, penalty };
 }
 
 function residentEmployment(globalIdx){
@@ -2911,7 +2960,7 @@ function buildingEmployees(i){
   const t = state.tiles[i];
   if(!t) return { filled:0, capacity:0, employees:[] };
   const type = t.type;
-  if(type === 'concerthall' && t.role === 'secondary') return { filled:0, capacity:0, employees:[] };
+  if((type === 'concerthall' || type === 'stadium') && t.role === 'secondary') return { filled:0, capacity:0, employees:[] };
   const capacity = JOB_SLOTS[type] || 0;
   if(capacity === 0) return { filled:0, capacity:0, employees:[] };
 
@@ -3554,11 +3603,11 @@ function handleTileClick(i, event){
       if(current.type==='bridge'){
         state.tiles[i] = { type:'river', terrain:true };
         log(`Demolished a bridge. The river flows freely again.`);
-      } else if(current.type==='concerthall'){
+      } else if(current.pair != null && (current.type==='concerthall' || current.type==='stadium')){
         const pairIdx = current.pair;
         state.tiles[i] = null;
         if(pairIdx != null && state.tiles[pairIdx]) state.tiles[pairIdx] = null;
-        log('Demolished the concert hall.');
+        log(`Demolished the ${BUILDINGS[current.type].name.toLowerCase()}.`);
       } else {
         state.tiles[i] = null;
         log(`Demolished a ${BUILDINGS[current.type].name.toLowerCase()}.`);
@@ -3569,22 +3618,24 @@ function handleTileClick(i, event){
     return;
   }
 
-  // Concert Hall needs two clear tiles side by side.
-  if(selectedBuild === 'concerthall'){
+  // Concert Hall and Stadium need two clear tiles side by side.
+  if(selectedBuild === 'concerthall' || selectedBuild === 'stadium'){
     const c = i % COLS;
     const j = i + 1;
     const tj = (c + 1 < COLS) ? state.tiles[j] : 'edge';
     if(current){ log("That tile is already occupied."); return; }
-    if(tj === 'edge' || tj){ log("Concert Hall needs two clear tiles side by side."); return; }
-    const b = BUILDINGS.concerthall;
+    const b = BUILDINGS[selectedBuild];
+    if(tj === 'edge' || tj){ log(`${b.name} needs two clear tiles side by side.`); return; }
     for(const [res, amt] of Object.entries(b.cost)){
-      if(state[res] < amt){ rejectInsufficient(event, `Not enough ${res} to build a concert hall.`); return; }
+      if(state[res] < amt){ rejectInsufficient(event, `Not enough ${res} to build a ${b.name.toLowerCase()}.`); return; }
     }
     for(const [res, amt] of Object.entries(b.cost)){ state[res] -= amt; }
-    state.tiles[i] = { type:'concerthall', pair:j };
-    state.tiles[j] = { type:'concerthall', pair:i, role:'secondary' };
-    log('Built a concert hall! It will host a show every 100 ticks, running for 50 ticks each time.');
-    playBuildSound('concerthall');
+    state.tiles[i] = { type:selectedBuild, pair:j };
+    state.tiles[j] = { type:selectedBuild, pair:i, role:'secondary' };
+    log(selectedBuild === 'concerthall'
+      ? 'Built a concert hall! It will host a show every 100 ticks, running for 50 ticks each time.'
+      : 'Built a stadium across two tiles.');
+    playBuildSound(selectedBuild);
     renderGrid(); renderStats(); save();
     popTile(i); popTile(j);
     return;
@@ -3728,7 +3779,7 @@ function gameTick(){
   const concertHalls = countMainType('concerthall');
   const fisheries = countType('fishery');
   const mines = countType('mine');
-  const stadiums = countType('stadium');
+  const stadiums = countMainType('stadium');
   const clockTowers = countType('clocktower');
   const statues = countType('statue');
   const sawmills = countType('sawmill');
@@ -3752,7 +3803,7 @@ function gameTick(){
   const activeSawmills = activeCount('sawmill');
   const activeQuarries = activeCount('quarry');
 
-  const foodProduced = activeFarms * 3 + activeFisheries * 3;
+  const foodProduced = activeFarms * 6 + activeFisheries * 6;
   const foodConsumed = state.population * 1;
   state.food += foodProduced - foodConsumed;
   const starving = state.food < 0;
@@ -3783,7 +3834,7 @@ function gameTick(){
   happinessDelta -= unemployed * 2;
   happinessDelta -= starving ? 8 : 0;
   happinessDelta += (state.food > state.population * 5) ? 1 : 0;
-  happinessDelta -= winterStormActive() ? 10 : 0; // -10% happiness while a snow storm rages
+  happinessDelta -= winterStormActive() ? protectedHappinessPenalty(10) : 0;
   happinessDelta -= 0.3;
   state.happiness = Math.max(0, Math.min(100, state.happiness + happinessDelta));
 
@@ -3867,6 +3918,7 @@ mayorInput.addEventListener('input', ()=>{
 const loaded = load();
 if(!state.townHallLevel) state.townHallLevel = 1;
 if(state.winterStormUntil === undefined) state.winterStormUntil = null;
+migrateLegacyStadiumFootprints();
 mayorInput.value = state.mayorName || 'Mayor';
 renderBuildList();
 computeTileSize();
