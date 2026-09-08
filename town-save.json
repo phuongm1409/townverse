@@ -1,11 +1,11 @@
 {
-  "coins": 259974.99999999956,
+  "coins": 329984.4000000004,
   "food": 0,
-  "wood": 5562,
-  "population": 142,
-  "housingCap": 458,
+  "wood": 6466,
+  "population": 152,
+  "housingCap": 308,
   "happiness": 100,
-  "ecoScore": -18,
+  "ecoScore": -109,
   "tiles": [
     {
       "type": "mountain",
@@ -20,22 +20,22 @@
       "snow": true
     },
     {
-      "type": "mountain",
-      "terrain": true,
-      "peak": 44,
-      "snow": false
-    },
-    null,
-    {
       "type": "farm",
-      "growth": 4
+      "growth": 1
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 3
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "farm",
+      "growth": 3
     },
     {
       "type": "factory"
@@ -51,11 +51,23 @@
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 4
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 4
+    },
+    {
+      "type": "farm",
+      "growth": 3
+    },
+    {
+      "type": "park",
+      "variant": "p1"
+    },
+    {
+      "type": "farm",
+      "growth": 4
     },
     {
       "type": "farm",
@@ -67,48 +79,27 @@
     },
     {
       "type": "concerthall",
-      "pair": 15,
-      "_upcomingShow": "ONG SEONGWU fanmeeting"
+      "pair": 18,
+      "_windUntil": 1552,
+      "_windPct": 20,
+      "_windPause": false
     },
     {
       "type": "concerthall",
-      "pair": 14,
-      "role": "secondary"
-    },
-    {
-      "type": "park",
-      "variant": "p1"
-    },
-    {
-      "type": "mountain",
-      "terrain": true,
-      "peak": 57,
-      "snow": true
-    },
-    {
-      "type": "mountain",
-      "terrain": true,
-      "peak": 49,
-      "snow": true
+      "pair": 17,
+      "role": "secondary",
+      "_windUntil": 1531,
+      "_windPct": 20,
+      "_windPause": false
     },
     {
       "type": "mine"
     },
     {
-      "type": "river",
-      "terrain": true
-    },
-    null,
-    {
       "type": "road"
     },
     {
-      "type": "farm",
-      "growth": 4
-    },
-    {
-      "type": "farm",
-      "growth": 1
+      "type": "road"
     },
     {
       "type": "road"
@@ -119,14 +110,25 @@
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 0
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 2
+    },
+    {
+      "type": "farm",
+      "growth": 3
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "farm",
+      "growth": 3
     },
     {
       "type": "road"
@@ -144,16 +146,10 @@
       "type": "road"
     },
     {
-      "type": "mountain",
-      "terrain": true,
-      "peak": 47,
-      "snow": true
+      "type": "road"
     },
     {
-      "type": "mountain",
-      "terrain": true,
-      "peak": 47,
-      "snow": true
+      "type": "road"
     },
     {
       "type": "road"
@@ -187,7 +183,7 @@
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 3
     },
     {
       "type": "store",
@@ -219,28 +215,28 @@
     {
       "type": "resort"
     },
-    {
-      "type": "river",
-      "terrain": true
-    },
     null,
     {
       "type": "farm",
-      "growth": 2
-    },
-    {
-      "type": "road"
+      "growth": 1
     },
     {
       "type": "farm",
       "growth": 1
     },
     {
+      "type": "road"
+    },
+    {
+      "type": "farm",
+      "growth": 0
+    },
+    {
       "type": "factory"
     },
     {
       "type": "factory",
-      "_windUntil": 903,
+      "_windUntil": 1561,
       "_windPct": 20,
       "_windPause": true
     },
@@ -257,18 +253,18 @@
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 3
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 1
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 3
     },
     {
       "type": "hotel"
@@ -289,29 +285,29 @@
     },
     {
       "type": "farm",
-      "growth": 3,
+      "growth": 2,
       "_windUntil": 913,
       "_windPct": 20,
       "_windPause": true
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 1
     },
     {
       "type": "farm",
-      "growth": 2,
+      "growth": 1,
       "_windUntil": 592,
       "_windPct": 20,
       "_windPause": true
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 1
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 2
     },
     {
       "type": "store",
@@ -326,7 +322,7 @@
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 2
     },
     {
       "type": "road"
@@ -339,7 +335,7 @@
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 3
     },
     {
       "type": "road"
@@ -394,18 +390,18 @@
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 2
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 1
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 3
     },
     {
       "type": "road"
@@ -497,26 +493,26 @@
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 4
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 4
     },
     {
       "type": "cinema"
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 4
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 4
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 4
     },
     {
       "type": "road",
@@ -579,7 +575,8 @@
       "type": "road",
       "_windUntil": 1045,
       "_windPct": 20,
-      "_windPause": false
+      "_windPause": false,
+      "_snowBlockUntil": 1407
     },
     {
       "type": "road"
@@ -655,14 +652,14 @@
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 0
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 4
     },
     {
       "type": "road"
@@ -705,22 +702,13 @@
       "_windPause": false
     },
     {
-      "type": "apartment",
-      "level": 3
+      "type": "road"
     },
     {
-      "type": "apartment",
-      "level": 3,
-      "_windUntil": 586,
-      "_windPct": 20,
-      "_windPause": false
+      "type": "road"
     },
     {
-      "type": "apartment",
-      "level": 3,
-      "_windUntil": 739,
-      "_windPct": 20,
-      "_windPause": false
+      "type": "road"
     },
     {
       "type": "road"
@@ -733,7 +721,7 @@
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 4
     },
     {
       "type": "road",
@@ -758,33 +746,38 @@
     },
     {
       "type": "farm",
-      "growth": 0,
+      "growth": 4,
       "_windUntil": 1207,
       "_windPct": 20,
       "_windPause": true
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 4
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 4
     },
     {
-      "type": "road"
+      "type": "farm",
+      "growth": 3
     },
     {
-      "type": "road"
+      "type": "farm",
+      "growth": 3
     },
     {
-      "type": "road"
+      "type": "farm",
+      "growth": 2
     },
     {
-      "type": "road"
+      "type": "farm",
+      "growth": 2
     },
     {
-      "type": "road"
+      "type": "farm",
+      "growth": 2
     },
     {
       "type": "police"
@@ -794,57 +787,8 @@
     },
     null
   ],
-  "quests": [
-    {
-      "id": 240,
-      "name": "Ines",
-      "tileIndex": 97,
-      "need": {
-        "res": "food",
-        "amount": 14
-      },
-      "reward": {
-        "type": "happiness",
-        "amount": 4
-      },
-      "expiresAtTick": 1405,
-      "createdAtTick": 1386,
-      "duration": 19
-    },
-    {
-      "id": 242,
-      "name": "Tobias",
-      "tileIndex": 97,
-      "need": {
-        "res": "food",
-        "amount": 25
-      },
-      "reward": {
-        "type": "coins",
-        "amount": 50
-      },
-      "expiresAtTick": 1420,
-      "createdAtTick": 1396,
-      "duration": 24
-    },
-    {
-      "id": 243,
-      "name": "Sana",
-      "tileIndex": 97,
-      "need": {
-        "res": "wood",
-        "amount": 10
-      },
-      "reward": {
-        "type": "happiness",
-        "amount": 4
-      },
-      "expiresAtTick": 1417,
-      "createdAtTick": 1398,
-      "duration": 19
-    }
-  ],
-  "nextQuestId": 244,
+  "quests": [],
+  "nextQuestId": 281,
   "mayorName": "Alecia",
   "townHallLevel": 7,
   "destructionHistory": {
@@ -855,6 +799,7 @@
     "32": "Road was destroyed by Fire.",
     "39": "Farm was destroyed by Flood.",
     "44": "Road was destroyed by Fire.",
+    "54": "Farm was destroyed by Flood.",
     "55": "Farm was destroyed by Flood.",
     "58": "Factory was destroyed by Fire.",
     "73": "Farm was destroyed by Fire.",
@@ -880,7 +825,8 @@
     "3": 25,
     "5": 50,
     "6": 25,
-    "8": 25,
+    "7": 25,
+    "8": 50,
     "9": 25,
     "11": 25,
     "12": 25,
@@ -896,14 +842,17 @@
     "43": 25,
     "48": 75,
     "51": 25,
+    "55": 25,
     "59": 25,
     "60": 50,
     "62": 25,
-    "100": 25
+    "100": 25,
+    "105": 25,
+    "127": 25
   },
   "pendingReconstructions": [],
-  "tourists": 12,
-  "tick": 1398,
-  "season": 2,
+  "tourists": 6,
+  "tick": 1560,
+  "season": 3,
   "winterStormUntil": null
 }
