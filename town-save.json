@@ -1,10 +1,10 @@
 {
-  "coins": 329984.4000000004,
+  "coins": 355436.0000000013,
   "food": 0,
-  "wood": 6466,
-  "population": 152,
+  "wood": 6848,
+  "population": 150,
   "housingCap": 308,
-  "happiness": 100,
+  "happiness": 57.699999999999996,
   "ecoScore": -109,
   "tiles": [
     {
@@ -21,21 +21,21 @@
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 0
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 2
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 2
     },
     {
       "type": "factory"
@@ -51,11 +51,23 @@
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 3
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 3
+    },
+    {
+      "type": "farm",
+      "growth": 2
+    },
+    {
+      "type": "park",
+      "variant": "p1"
+    },
+    {
+      "type": "farm",
+      "growth": 3
     },
     {
       "type": "farm",
@@ -66,23 +78,12 @@
       "variant": "p1"
     },
     {
-      "type": "farm",
-      "growth": 4
-    },
-    {
-      "type": "farm",
-      "growth": 4
-    },
-    {
-      "type": "park",
-      "variant": "p1"
-    },
-    {
       "type": "concerthall",
       "pair": 18,
       "_windUntil": 1552,
       "_windPct": 20,
-      "_windPause": false
+      "_windPause": false,
+      "_liveShow": "Kim Ji Won fanmeeting"
     },
     {
       "type": "concerthall",
@@ -106,11 +107,22 @@
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 2
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 4
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "farm",
+      "growth": 1
+    },
+    {
+      "type": "farm",
+      "growth": 2
     },
     {
       "type": "road"
@@ -118,17 +130,6 @@
     {
       "type": "farm",
       "growth": 2
-    },
-    {
-      "type": "farm",
-      "growth": 3
-    },
-    {
-      "type": "road"
-    },
-    {
-      "type": "farm",
-      "growth": 3
     },
     {
       "type": "road"
@@ -140,7 +141,8 @@
       "_windPause": false
     },
     {
-      "type": "road"
+      "type": "road",
+      "_snowBlockUntil": 1570
     },
     {
       "type": "road"
@@ -183,7 +185,7 @@
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 2
     },
     {
       "type": "store",
@@ -218,18 +220,18 @@
     null,
     {
       "type": "farm",
-      "growth": 1
+      "growth": 0
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 0
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 4
     },
     {
       "type": "factory"
@@ -253,18 +255,18 @@
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 2
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 0
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 2
     },
     {
       "type": "hotel"
@@ -285,29 +287,29 @@
     },
     {
       "type": "farm",
-      "growth": 2,
+      "growth": 1,
       "_windUntil": 913,
       "_windPct": 20,
       "_windPause": true
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 0
     },
     {
       "type": "farm",
-      "growth": 1,
+      "growth": 0,
       "_windUntil": 592,
       "_windPct": 20,
       "_windPause": true
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 0
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 1
     },
     {
       "type": "store",
@@ -322,7 +324,7 @@
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 1
     },
     {
       "type": "road"
@@ -335,7 +337,7 @@
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 2
     },
     {
       "type": "road"
@@ -390,18 +392,18 @@
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 1
     },
     {
       "type": "farm",
-      "growth": 1
+      "growth": 0
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 2
     },
     {
       "type": "road"
@@ -493,26 +495,26 @@
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 3
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 3
     },
     {
       "type": "cinema"
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 3
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 3
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 3
     },
     {
       "type": "road",
@@ -575,8 +577,7 @@
       "type": "road",
       "_windUntil": 1045,
       "_windPct": 20,
-      "_windPause": false,
-      "_snowBlockUntil": 1407
+      "_windPause": false
     },
     {
       "type": "road"
@@ -652,14 +653,14 @@
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 4
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 3
     },
     {
       "type": "road"
@@ -721,7 +722,7 @@
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 3
     },
     {
       "type": "road",
@@ -746,21 +747,13 @@
     },
     {
       "type": "farm",
-      "growth": 4,
+      "growth": 3,
       "_windUntil": 1207,
       "_windPct": 20,
       "_windPause": true
     },
     {
       "type": "farm",
-      "growth": 4
-    },
-    {
-      "type": "farm",
-      "growth": 4
-    },
-    {
-      "type": "farm",
       "growth": 3
     },
     {
@@ -777,7 +770,15 @@
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 1
+    },
+    {
+      "type": "farm",
+      "growth": 1
+    },
+    {
+      "type": "farm",
+      "growth": 1
     },
     {
       "type": "police"
@@ -788,7 +789,7 @@
     null
   ],
   "quests": [],
-  "nextQuestId": 281,
+  "nextQuestId": 291,
   "mayorName": "Alecia",
   "townHallLevel": 7,
   "destructionHistory": {
@@ -843,6 +844,7 @@
     "48": 75,
     "51": 25,
     "55": 25,
+    "58": 25,
     "59": 25,
     "60": 50,
     "62": 25,
@@ -851,8 +853,8 @@
     "127": 25
   },
   "pendingReconstructions": [],
-  "tourists": 6,
-  "tick": 1560,
-  "season": 3,
+  "tourists": 24,
+  "tick": 1620,
+  "season": 0,
   "winterStormUntil": null
 }
