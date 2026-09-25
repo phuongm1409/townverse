@@ -1,10 +1,10 @@
 {
-  "coins": 468876.00000000175,
-  "food": 9525,
-  "wood": 8263.5,
-  "population": 146,
+  "coins": 469605.75000000175,
+  "food": 9673,
+  "wood": 8270,
+  "population": 145,
   "housingCap": 408,
-  "happiness": 9.500000000000071,
+  "happiness": 4.20000000000007,
   "ecoScore": -109,
   "tiles": [
     {
@@ -21,21 +21,21 @@
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 1
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 4
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 4
     },
     {
       "type": "factory"
@@ -51,15 +51,15 @@
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 0
+    },
+    {
+      "type": "farm",
+      "growth": 0
     },
     {
       "type": "farm",
       "growth": 4
-    },
-    {
-      "type": "farm",
-      "growth": 3
     },
     {
       "type": "park",
@@ -67,11 +67,11 @@
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 0
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 0
     },
     {
       "type": "park",
@@ -106,22 +106,11 @@
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 4
     },
     {
       "type": "farm",
-      "growth": 0
-    },
-    {
-      "type": "road"
-    },
-    {
-      "type": "farm",
-      "growth": 2
-    },
-    {
-      "type": "farm",
-      "growth": 3
+      "growth": 1
     },
     {
       "type": "road"
@@ -129,6 +118,17 @@
     {
       "type": "farm",
       "growth": 3
+    },
+    {
+      "type": "farm",
+      "growth": 4
+    },
+    {
+      "type": "road"
+    },
+    {
+      "type": "farm",
+      "growth": 4
     },
     {
       "type": "road"
@@ -212,23 +212,23 @@
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 1
     },
     null,
     {
       "type": "farm",
-      "growth": 0
+      "growth": 1
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 1
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 1
     },
     {
       "type": "factory"
@@ -252,18 +252,18 @@
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 4
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 1
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 3,
+      "growth": 4,
       "_windUntil": 1863,
       "_windPct": 20,
       "_windPause": true
@@ -288,29 +288,29 @@
     },
     {
       "type": "farm",
-      "growth": 2,
+      "growth": 3,
       "_windUntil": 913,
       "_windPct": 20,
       "_windPause": true
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 1
     },
     {
       "type": "farm",
-      "growth": 0,
+      "growth": 1,
       "_windUntil": 592,
       "_windPct": 20,
       "_windPause": true
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 1
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 3
     },
     {
       "type": "store",
@@ -325,7 +325,7 @@
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 3
     },
     {
       "type": "road"
@@ -338,7 +338,7 @@
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 4
     },
     {
       "type": "road"
@@ -396,18 +396,18 @@
     },
     {
       "type": "farm",
-      "growth": 2
+      "growth": 3
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 1
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 3
+      "growth": 4
     },
     {
       "type": "road"
@@ -499,26 +499,26 @@
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 0
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 0
     },
     {
       "type": "cinema"
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 0
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 0
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 0
     },
     {
       "type": "road",
@@ -660,14 +660,14 @@
     },
     {
       "type": "farm",
-      "growth": 0
+      "growth": 1
     },
     {
       "type": "road"
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 0
     },
     {
       "type": "road"
@@ -729,7 +729,7 @@
     },
     {
       "type": "farm",
-      "growth": 4
+      "growth": 0
     },
     {
       "type": "road",
@@ -754,13 +754,21 @@
     },
     {
       "type": "farm",
-      "growth": 4,
+      "growth": 0,
       "_windUntil": 1207,
       "_windPct": 20,
       "_windPause": true
     },
     {
       "type": "farm",
+      "growth": 0
+    },
+    {
+      "type": "farm",
+      "growth": 0
+    },
+    {
+      "type": "farm",
       "growth": 4
     },
     {
@@ -777,15 +785,7 @@
     },
     {
       "type": "farm",
-      "growth": 2
-    },
-    {
-      "type": "farm",
-      "growth": 2
-    },
-    {
-      "type": "farm",
-      "growth": 2,
+      "growth": 3,
       "_windUntil": 1716,
       "_windPct": 20,
       "_windPause": true
@@ -923,7 +923,7 @@
   },
   "pendingReconstructions": [],
   "tourists": 3,
-  "tick": 1863,
+  "tick": 1864,
   "season": 2,
   "winterStormUntil": null
 }
