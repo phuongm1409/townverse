@@ -473,9 +473,14 @@
   .tile.mountain.snow{background:var(--snow) !important;}
   .tile.mountain.snow:nth-child(odd){background:#e2e9f4 !important;}
   .tile.bridge{
-    background:var(--bridge) !important;
+    background-color:var(--bridge);
     background-image: repeating-linear-gradient(90deg, rgba(90,60,30,.35) 0 3px, transparent 3px 14px);
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
   }
+  /* Hide bundled fallback artwork until the matching repository PNG resolves. */
+  .tile.res-loading{ background-image:none !important; }
   .tile.store{
     background:var(--store);
     background-image: linear-gradient(135deg, rgba(255,255,255,.35) 0 20%, transparent 20% 100%);
@@ -887,6 +892,7 @@
 <div id="gameViewport">
 <div class="padControls">
   <button class="padBtn publish" id="ghPublishBtn" title="Publish save to GitHub">⬆️ Publish</button>
+  <button class="padBtn" id="ghLoadBtn" title="Load town-save.json from GitHub">⬇️ Load Data</button>
   <button class="padBtn" id="ghSettingsBtn" title="GitHub settings">⚙️</button>
 </div>
 
@@ -901,11 +907,10 @@
     <input id="ghBranch" type="text" placeholder="main">
     <label for="ghPath">File path</label>
     <input id="ghPath" type="text" placeholder="town-save.json">
-    <div class="ghHint">Stored only in this browser's local storage. Needs a token with "repo" (contents) scope. Publishing writes your current town save as JSON to this file.</div>
+    <div class="ghHint">Stored only in this browser's local storage. Needs a token with Contents read/write access. Publishing and loading use this JSON file. The game automatically publishes every 10 minutes.</div>
     <div id="ghStatus"></div>
     <div class="ghRow">
       <button id="ghCancel">Cancel</button>
-      <button id="ghLoadTown">Load town-verse.json</button>
       <button id="ghSave">Save</button>
     </div>
     <div class="ghHint" style="margin-top:10px;">Danger zone: permanently wipes your local town and starts over.</div>
@@ -1789,55 +1794,29 @@ function resFileFor(type, variant){
   const file = RES_FILES[key];
   return file ? RES_BASE + encodeURIComponent(file) + '?v=' + RES_CACHE_VERSION : null;
 }
-function tryResImage(url, onOk, onFail){
-  if(!url){
-    if(onFail) onFail();
-    return;
-  }
+function tryResImage(url, onOk, onError){
+  if(!url) return;
   if(url in _resCache){
-    if(_resCache[url]){
-      if(onOk) onOk();
-    } else if(onFail){
-      onFail();
-    }
+    if(_resCache[url]) onOk();
+    else if(onError) onError();
     return;
   }
   const img = new Image();
-  img.onload = ()=>{
-    _resCache[url] = true;
-    if(onOk) onOk();
-  };
-  img.onerror = ()=>{
-    _resCache[url] = false;
-    if(onFail) onFail();
-  };
+  img.onload = ()=>{ _resCache[url] = true; onOk(); };
+  img.onerror = ()=>{ _resCache[url] = false; if(onError) onError(); };
   img.src = url;
 }
 function applyResImage(div, url, rot, options){
-  if(!div || !url) return;
-
-  // Hide the old embedded/CSS artwork while the current GitHub asset loads.
-  // If GitHub fails, the inline override is removed so the old artwork can
-  // still act as an emergency fallback.
-  div.style.backgroundImage = 'none';
-  div.dataset.remoteMedia = 'loading';
-
+  if(!url) return;
+  div.classList.add('res-loading');
   tryResImage(url, ()=>{
+    div.classList.remove('res-loading');
     div.style.backgroundImage = `url("${url}")`;
     div.style.backgroundSize = options && options.size ? options.size : 'cover';
     div.style.backgroundPosition = options && options.position ? options.position : 'center';
     div.style.backgroundRepeat = 'no-repeat';
     if(rot){ div.style.setProperty('--res-rot', rot+'deg'); }
-    div.dataset.remoteMedia = 'loaded';
-  }, ()=>{
-    div.style.removeProperty('background-image');
-    div.style.removeProperty('background-size');
-    div.style.removeProperty('background-position');
-    div.style.removeProperty('background-repeat');
-    if(rot){ div.style.removeProperty('--res-rot'); }
-    div.dataset.remoteMedia = 'fallback';
-    console.warn('[Townverse] GitHub media failed, using fallback:', url);
-  });
+  }, ()=> div.classList.remove('res-loading'));
 }
 
 // Farm growth-stage artwork: 0-60% -> stage 1, 61-99% -> stage 2, 100% -> stage 3 (cultivatable)
@@ -2262,8 +2241,13 @@ function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); 
 
 /* ---------- GitHub publish ---------- */
 const GH_KEY = 'pixelTownGitHubCfgV1';
+const GH_DEFAULT_PATH = 'town-save.json';
 function ghLoadCfg(){
-  try{ return JSON.parse(localStorage.getItem(GH_KEY) || '{}'); }catch(e){ return {}; }
+  try{
+    const cfg = JSON.parse(localStorage.getItem(GH_KEY) || '{}');
+    if(!cfg.path || cfg.path === 'town-verse.json') cfg.path = GH_DEFAULT_PATH;
+    return cfg;
+  }catch(e){ return {}; }
 }
 function ghSaveCfg(cfg){ try{ localStorage.setItem(GH_KEY, JSON.stringify(cfg)); }catch(e){} }
 function ghHasCfg(){
@@ -2275,7 +2259,7 @@ function ghOpenPanel(){
   document.getElementById('ghToken').value = c.token || '';
   document.getElementById('ghRepo').value = c.repo || '';
   document.getElementById('ghBranch').value = c.branch || 'main';
-  document.getElementById('ghPath').value = c.path || 'town-save.json';
+  document.getElementById('ghPath').value = c.path || GH_DEFAULT_PATH;
   document.getElementById('ghStatus').textContent = '';
   document.getElementById('ghStatus').className = '';
   document.getElementById('ghOverlay').classList.add('show');
@@ -2339,7 +2323,7 @@ document.getElementById('ghSave').addEventListener('click', ()=>{
     token: document.getElementById('ghToken').value.trim(),
     repo: document.getElementById('ghRepo').value.trim(),
     branch: document.getElementById('ghBranch').value.trim() || 'main',
-    path: document.getElementById('ghPath').value.trim() || 'town-save.json',
+    path: document.getElementById('ghPath').value.trim() || GH_DEFAULT_PATH,
   };
   if(!cfg.token || !cfg.repo){
     const s = document.getElementById('ghStatus');
@@ -2350,111 +2334,31 @@ document.getElementById('ghSave').addEventListener('click', ()=>{
   ghClosePanel();
 });
 
-// Load a town save from town-verse.json in the configured GitHub repository.
-// Uses the token/repo/branch currently typed into the GitHub Settings panel,
-// so the settings do not need to be saved first.
-function base64ToUtf8(str){
-  const clean = String(str || '').replace(/\s/g, '');
-  return decodeURIComponent(escape(atob(clean)));
-}
-
-async function ghLoadTownVerse(){
-  const btn = document.getElementById('ghLoadTown');
-  const status = document.getElementById('ghStatus');
-  const token = document.getElementById('ghToken').value.trim();
-  const repo = document.getElementById('ghRepo').value.trim();
-  const branch = document.getElementById('ghBranch').value.trim() || 'main';
-  const remotePath = 'town-verse.json';
-
-  status.textContent = '';
-  status.className = '';
-
-  if(!token || !repo){
-    status.textContent = 'Token and repo are required to load town-verse.json.';
-    status.className = 'err';
-    return;
-  }
-
-  const oldText = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = 'Loading…';
-
-  try{
-    const api = `https://api.github.com/repos/${repo}/contents/${encodeURIComponent(remotePath).replace(/%2F/g,'/')}`;
-    const res = await fetch(`${api}?ref=${encodeURIComponent(branch)}&t=${Date.now()}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28'
-      },
-      cache: 'no-store'
-    });
-
-    if(!res.ok){
-      const err = await res.json().catch(()=>({}));
-      if(res.status === 404) throw new Error(`town-verse.json was not found on branch "${branch}".`);
-      if(res.status === 401) throw new Error('GitHub rejected the token. Check that the token is valid.');
-      if(res.status === 403) throw new Error(err.message || 'The token does not have permission to read this repository.');
-      throw new Error(err.message || `GitHub API error ${res.status}`);
-    }
-
-    const remote = await res.json();
-    if(!remote || remote.type !== 'file') throw new Error('town-verse.json is not a file.');
-
-    let jsonText = '';
-    if(remote.content){
-      jsonText = base64ToUtf8(remote.content);
-    }else if(remote.download_url){
-      const rawRes = await fetch(`${remote.download_url}${remote.download_url.includes('?') ? '&' : '?'}t=${Date.now()}`, { cache:'no-store' });
-      if(!rawRes.ok) throw new Error(`Could not download town-verse.json (${rawRes.status}).`);
-      jsonText = await rawRes.text();
-    }else{
-      throw new Error('GitHub returned no readable content for town-verse.json.');
-    }
-
-    const importedState = JSON.parse(jsonText);
-    if(!importedState || typeof importedState !== 'object' || Array.isArray(importedState)){
-      throw new Error('town-verse.json does not contain a valid town save object.');
-    }
-
-    // Store the imported save locally, then reload so the normal load()
-    // migration/compatibility logic handles old or newer save fields safely.
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(importedState));
-
-    // Keep the credentials that successfully loaded the town.
-    ghSaveCfg({
-      token,
-      repo,
-      branch,
-      path: document.getElementById('ghPath').value.trim() || 'town-save.json'
-    });
-
-    status.textContent = 'town-verse.json loaded ✓ Reloading town…';
-    status.className = 'ok';
-    btn.textContent = 'Loaded ✓';
-
-    setTimeout(()=>location.reload(), 450);
-  }catch(e){
-    console.error('GitHub town load failed:', e);
-    status.textContent = `Load failed: ${e.message}`;
-    status.className = 'err';
-    btn.disabled = false;
-    btn.textContent = oldText;
-  }
-}
-
-document.getElementById('ghLoadTown').addEventListener('click', ghLoadTownVerse);
-
 function utf8ToBase64(str){
   return btoa(unescape(encodeURIComponent(str)));
 }
+function base64ToUtf8(str){
+  return decodeURIComponent(escape(atob(String(str || '').replace(/\s/g, ''))));
+}
 
-async function ghPublish(){
+function ghApiFor(cfg){
+  return `https://api.github.com/repos/${cfg.repo}/contents/${encodeURIComponent(cfg.path || GH_DEFAULT_PATH).replace(/%2F/g,'/')}`;
+}
+
+let ghPublishInFlight = false;
+async function ghPublish(options = {}){
+  const silent = !!options.silent;
   const btn = document.getElementById('ghPublishBtn');
-  if(!ghHasCfg()){ ghOpenPanel(); return; }
+  if(!ghHasCfg()){
+    if(!silent) ghOpenPanel();
+    return false;
+  }
+  if(ghPublishInFlight) return false;
+  ghPublishInFlight = true;
   const cfg = ghLoadCfg();
-  const api = `https://api.github.com/repos/${cfg.repo}/contents/${encodeURIComponent(cfg.path).replace(/%2F/g,'/')}`;
-  btn.disabled = true; const oldText = btn.textContent; btn.textContent = 'Publishing…';
+  const api = ghApiFor(cfg);
+  const oldText = btn.textContent;
+  if(!silent){ btn.disabled = true; btn.textContent = 'Publishing…'; }
   try{
     save();
     const content = utf8ToBase64(JSON.stringify(state, null, 2));
@@ -2477,15 +2381,59 @@ async function ghPublish(){
       const err = await putRes.json().catch(()=>({}));
       throw new Error(err.message || `GitHub API error ${putRes.status}`);
     }
-    btn.textContent = 'Published ✓';
+    if(!silent) btn.textContent = 'Published ✓';
+    return true;
   }catch(e){
-    btn.textContent = 'Failed ✗';
+    if(!silent) btn.textContent = 'Failed ✗';
     console.error('GitHub publish failed:', e);
+    return false;
   }finally{
-    setTimeout(()=>{ btn.textContent = oldText; btn.disabled = false; }, 2200);
+    ghPublishInFlight = false;
+    if(!silent) setTimeout(()=>{ btn.textContent = oldText; btn.disabled = false; }, 2200);
   }
 }
 document.getElementById('ghPublishBtn').addEventListener('click', ghPublish);
+
+async function ghLoadData(){
+  if(!ghHasCfg()){ ghOpenPanel(); return; }
+  if(!confirm('Load town-save.json from GitHub? This will replace the town currently stored on this device.')) return;
+  const btn = document.getElementById('ghLoadBtn');
+  const cfg = ghLoadCfg();
+  const oldText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Loading…';
+  try{
+    const res = await fetch(`${ghApiFor(cfg)}?ref=${encodeURIComponent(cfg.branch || 'main')}`, {
+      headers:{ 'Authorization':`Bearer ${cfg.token}`, 'Accept':'application/vnd.github+json' },
+      cache:'no-store'
+    });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err.message || `GitHub API error ${res.status}`);
+    }
+    const file = await res.json();
+    let jsonText;
+    if(file.content) jsonText = base64ToUtf8(file.content);
+    else if(file.download_url){
+      const raw = await fetch(file.download_url, { cache:'no-store' });
+      if(!raw.ok) throw new Error(`Could not download ${cfg.path || GH_DEFAULT_PATH}`);
+      jsonText = await raw.text();
+    } else throw new Error('GitHub returned no file content.');
+    const remoteState = JSON.parse(jsonText);
+    if(!remoteState || typeof remoteState !== 'object' || !Array.isArray(remoteState.tiles)){
+      throw new Error('The JSON file is not a valid Townverse save.');
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteState));
+    btn.textContent = 'Loaded ✓';
+    setTimeout(()=> location.reload(), 450);
+  }catch(e){
+    btn.textContent = 'Load failed ✗';
+    console.error('GitHub load failed:', e);
+    alert(`Could not load ${cfg.path || GH_DEFAULT_PATH}: ${e.message}`);
+    setTimeout(()=>{ btn.textContent = oldText; btn.disabled = false; }, 2200);
+  }
+}
+document.getElementById('ghLoadBtn').addEventListener('click', ghLoadData);
 function load(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -4063,6 +4011,8 @@ renderQuests();
 armPendingReconstructions();
 log(loaded ? "Welcome back! Your town has been restored." : "New town founded. Start building!");
 setInterval(gameTick, 3000);
+// Keep the configured GitHub save current without interrupting gameplay.
+setInterval(()=> ghPublish({ silent:true }), 10 * 60 * 1000);
 
 let resizeTimer;
 window.addEventListener('resize', ()=>{
