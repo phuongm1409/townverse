@@ -905,6 +905,7 @@
     <div id="ghStatus"></div>
     <div class="ghRow">
       <button id="ghCancel">Cancel</button>
+      <button id="ghLoadTown">Load town-verse.json</button>
       <button id="ghSave">Save</button>
     </div>
     <div class="ghHint" style="margin-top:10px;">Danger zone: permanently wipes your local town and starts over.</div>
@@ -2348,6 +2349,101 @@ document.getElementById('ghSave').addEventListener('click', ()=>{
   ghSaveCfg(cfg);
   ghClosePanel();
 });
+
+// Load a town save from town-verse.json in the configured GitHub repository.
+// Uses the token/repo/branch currently typed into the GitHub Settings panel,
+// so the settings do not need to be saved first.
+function base64ToUtf8(str){
+  const clean = String(str || '').replace(/\s/g, '');
+  return decodeURIComponent(escape(atob(clean)));
+}
+
+async function ghLoadTownVerse(){
+  const btn = document.getElementById('ghLoadTown');
+  const status = document.getElementById('ghStatus');
+  const token = document.getElementById('ghToken').value.trim();
+  const repo = document.getElementById('ghRepo').value.trim();
+  const branch = document.getElementById('ghBranch').value.trim() || 'main';
+  const remotePath = 'town-verse.json';
+
+  status.textContent = '';
+  status.className = '';
+
+  if(!token || !repo){
+    status.textContent = 'Token and repo are required to load town-verse.json.';
+    status.className = 'err';
+    return;
+  }
+
+  const oldText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Loading…';
+
+  try{
+    const api = `https://api.github.com/repos/${repo}/contents/${encodeURIComponent(remotePath).replace(/%2F/g,'/')}`;
+    const res = await fetch(`${api}?ref=${encodeURIComponent(branch)}&t=${Date.now()}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28'
+      },
+      cache: 'no-store'
+    });
+
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      if(res.status === 404) throw new Error(`town-verse.json was not found on branch "${branch}".`);
+      if(res.status === 401) throw new Error('GitHub rejected the token. Check that the token is valid.');
+      if(res.status === 403) throw new Error(err.message || 'The token does not have permission to read this repository.');
+      throw new Error(err.message || `GitHub API error ${res.status}`);
+    }
+
+    const remote = await res.json();
+    if(!remote || remote.type !== 'file') throw new Error('town-verse.json is not a file.');
+
+    let jsonText = '';
+    if(remote.content){
+      jsonText = base64ToUtf8(remote.content);
+    }else if(remote.download_url){
+      const rawRes = await fetch(`${remote.download_url}${remote.download_url.includes('?') ? '&' : '?'}t=${Date.now()}`, { cache:'no-store' });
+      if(!rawRes.ok) throw new Error(`Could not download town-verse.json (${rawRes.status}).`);
+      jsonText = await rawRes.text();
+    }else{
+      throw new Error('GitHub returned no readable content for town-verse.json.');
+    }
+
+    const importedState = JSON.parse(jsonText);
+    if(!importedState || typeof importedState !== 'object' || Array.isArray(importedState)){
+      throw new Error('town-verse.json does not contain a valid town save object.');
+    }
+
+    // Store the imported save locally, then reload so the normal load()
+    // migration/compatibility logic handles old or newer save fields safely.
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(importedState));
+
+    // Keep the credentials that successfully loaded the town.
+    ghSaveCfg({
+      token,
+      repo,
+      branch,
+      path: document.getElementById('ghPath').value.trim() || 'town-save.json'
+    });
+
+    status.textContent = 'town-verse.json loaded ✓ Reloading town…';
+    status.className = 'ok';
+    btn.textContent = 'Loaded ✓';
+
+    setTimeout(()=>location.reload(), 450);
+  }catch(e){
+    console.error('GitHub town load failed:', e);
+    status.textContent = `Load failed: ${e.message}`;
+    status.className = 'err';
+    btn.disabled = false;
+    btn.textContent = oldText;
+  }
+}
+
+document.getElementById('ghLoadTown').addEventListener('click', ghLoadTownVerse);
 
 function utf8ToBase64(str){
   return btoa(unescape(encodeURIComponent(str)));
