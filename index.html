@@ -1788,21 +1788,54 @@ function resFileFor(type, variant){
   const file = RES_FILES[key];
   return file ? RES_BASE + encodeURIComponent(file) + '?v=' + RES_CACHE_VERSION : null;
 }
-function tryResImage(url, onOk){
-  if(!url) return;
-  if(url in _resCache){ if(_resCache[url]) onOk(); return; }
+function tryResImage(url, onOk, onFail){
+  if(!url){
+    if(onFail) onFail();
+    return;
+  }
+  if(url in _resCache){
+    if(_resCache[url]){
+      if(onOk) onOk();
+    } else if(onFail){
+      onFail();
+    }
+    return;
+  }
   const img = new Image();
-  img.onload = ()=>{ _resCache[url] = true; onOk(); };
-  img.onerror = ()=>{ _resCache[url] = false; };
+  img.onload = ()=>{
+    _resCache[url] = true;
+    if(onOk) onOk();
+  };
+  img.onerror = ()=>{
+    _resCache[url] = false;
+    if(onFail) onFail();
+  };
   img.src = url;
 }
 function applyResImage(div, url, rot, options){
+  if(!div || !url) return;
+
+  // Hide the old embedded/CSS artwork while the current GitHub asset loads.
+  // If GitHub fails, the inline override is removed so the old artwork can
+  // still act as an emergency fallback.
+  div.style.backgroundImage = 'none';
+  div.dataset.remoteMedia = 'loading';
+
   tryResImage(url, ()=>{
     div.style.backgroundImage = `url("${url}")`;
     div.style.backgroundSize = options && options.size ? options.size : 'cover';
     div.style.backgroundPosition = options && options.position ? options.position : 'center';
     div.style.backgroundRepeat = 'no-repeat';
     if(rot){ div.style.setProperty('--res-rot', rot+'deg'); }
+    div.dataset.remoteMedia = 'loaded';
+  }, ()=>{
+    div.style.removeProperty('background-image');
+    div.style.removeProperty('background-size');
+    div.style.removeProperty('background-position');
+    div.style.removeProperty('background-repeat');
+    if(rot){ div.style.removeProperty('--res-rot'); }
+    div.dataset.remoteMedia = 'fallback';
+    console.warn('[Townverse] GitHub media failed, using fallback:', url);
   });
 }
 
